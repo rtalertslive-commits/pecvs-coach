@@ -1275,6 +1275,7 @@
                 user = u;
                 document.getElementById('login-overlay').classList.add('hidden');
                 await loadCoachData();
+                // Forced redeploy to clear stuck GitHub Actions queue - v1.3.1
                 init();
             } else {
                 user = null;
