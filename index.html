@@ -264,12 +264,46 @@
         /* TABLE */
         .table-scroll {
             overflow-x: auto;
+            margin: 0 -15px;
+            padding: 0 15px;
+        }
+
+        .week-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .week-table th {
+            padding: 10px 5px;
+            font-size: 10px;
+            color: var(--gold);
+            background: rgba(0, 0, 0, .2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .week-table td {
+            padding: 10px 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
         }
 
         .lb-table {
             width: 100%;
             border-collapse: collapse;
             min-width: 1000px;
+        }
+
+        /* (rest of lb-table styles preserved) */
+
+        .num-input {
+            width: 60px;
+            text-align: center;
+            padding: 8px 4px !important;
+        }
+
+        .prima-input {
+            width: 90px;
+            text-align: right;
         }
 
         .lb-table th {
@@ -473,10 +507,10 @@
 
         <!-- TAB NAV -->
         <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('leaderboard',this)"><i class="fa fa-table"></i>
-                Leaderboard / Ratios</button>
-            <button class="tab-btn" onclick="switchTab('bitacora',this)"><i class="fa fa-calendar-days"></i> Bitácora
-                Detallada</button>
+            <button class="tab-btn active" onclick="switchTab('bitacora',this)"><i class="fa fa-calendar-days"></i>
+                Bitácora Detallada</button>
+            <button class="tab-btn" onclick="switchTab('leaderboard',this)"><i class="fa fa-table"></i> Leaderboard /
+                Ratios</button>
             <button class="tab-btn" onclick="switchTab('kpis',this)"><i class="fa fa-chart-column"></i> KPIs
                 (Barras)</button>
             <button class="tab-btn" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
@@ -484,7 +518,7 @@
         </div>
 
         <!-- TAB: BITACORA DETALLADA -->
-        <div id="tab-bitacora" class="tab-panel">
+        <div id="tab-bitacora" class="tab-panel active">
             <div class="card">
                 <div class="charts-controls">
                     <div>
@@ -519,12 +553,11 @@
                     </div>
                 </div>
 
-                <div id="week-info" style="font-size:11px;color:var(--teal);margin-bottom:10px;"></div>
                 <div class="table-scroll">
-                    <table class="lb-table" style="min-width: 800px;">
+                    <table class="week-table">
                         <thead>
                             <tr>
-                                <th>Día</th>
+                                <th style="text-align:left;">Día</th>
                                 <th>P</th>
                                 <th>E</th>
                                 <th>C</th>
@@ -535,6 +568,28 @@
                             </tr>
                         </thead>
                         <tbody id="week-body"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td style="color:var(--gold-l); font-weight:700;">TOTAL SEM</td>
+                                <td id="tt-P" style="text-align:center;">0</td>
+                                <td id="tt-E" style="text-align:center;">0</td>
+                                <td id="tt-C" style="text-align:center;">0</td>
+                                <td id="tt-V" style="text-align:center;">0</td>
+                                <td id="tt-S" style="text-align:center;">0</td>
+                                <td id="tt-$" style="text-align:right; color:var(--gold-l);">0.00</td>
+                                <td></td>
+                            </tr>
+                            <tr style="background:rgba(212,175,55,0.05);">
+                                <td style="color:var(--gold); font-weight:800;">TOTAL MES</td>
+                                <td id="mt-P" style="text-align:center; font-weight:700;">0</td>
+                                <td id="mt-E" style="text-align:center; font-weight:700;">0</td>
+                                <td id="mt-C" style="text-align:center; font-weight:700;">0</td>
+                                <td id="mt-V" style="text-align:center; font-weight:700;">0</td>
+                                <td id="mt-S" style="text-align:center; font-weight:700;">0</td>
+                                <td id="mt-$" style="text-align:right; color:var(--gold); font-weight:700;">0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
@@ -545,21 +600,25 @@
                 </div>
             </div>
         </div>
-        <div class="card">
-            <div class="charts-controls">
-                <div>
-                    <label class="field-label">Mes</label>
-                    <select id="lb-mes-filter" onchange="renderLeaderboard()">
-                        <option value="">Todos los meses</option>
-                    </select>
+
+        <!-- TAB: LEADERBOARD -->
+        <div id="tab-leaderboard" class="tab-panel">
+            <div class="card">
+                <div class="charts-controls">
+                    <div>
+                        <label class="field-label">Mes</label>
+                        <select id="lb-mes-filter" onchange="renderLeaderboard()">
+                            <option value="">Todos los meses</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="table-scroll">
-                <table class="lb-table">
-                    <thead id="lb-thead"></thead>
-                    <tbody id="lb-body"></tbody>
-                    <tfoot id="lb-foot"></tfoot>
-                </table>
+                <div class="table-scroll">
+                    <table class="lb-table">
+                        <thead id="lb-thead"></thead>
+                        <tbody id="lb-body"></tbody>
+                        <tfoot id="lb-foot"></tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -754,7 +813,10 @@
             btn.classList.add('active');
             if (name === 'kpis') renderKPIs();
             if (name === 'charts') renderCharts();
-            if (name === 'bitacora') autoLoadBitacora();
+            if (name === 'bitacora') {
+                autoLoadBitacora();
+                updateTotals();
+            }
         };
 
         // --- BITACORA LOGIC ---
@@ -784,11 +846,46 @@
             tbody.innerHTML = weekDays.map(d => `
                 <tr data-day="${d.dayName}">
                     <td class="day-label">${d.dayName} ${d.date}</td>
-                    ${COLS.map(c => `<td><input type="number" class="num-input" style="width:60px" data-day="${d.dayName}" data-col="${c}" value="0" oninput="validateTable()"></td>`).join('')}
-                    <td><input type="number" class="num-input" style="width:80px" data-day="${d.dayName}" data-col="prima" value="0" oninput="validateTable()"></td>
-                    <td id="status-${d.dayName}">—</td>
+                    ${COLS.map(c => `<td><input type="number" class="num-input" data-day="${d.dayName}" data-col="${c}" value="0" oninput="validateAndNotify()"></td>`).join('')}
+                    <td><input type="number" class="num-input prima-input" data-day="${d.dayName}" data-col="prima" value="0" oninput="validateAndNotify()"></td>
+                    <td id="status-${d.dayName}" style="text-align:center;">—</td>
                 </tr>`).join('');
             autoLoadBitacora();
+        };
+
+        window.validateAndNotify = () => {
+            validateTable();
+            updateTotals();
+        };
+
+        window.updateTotals = () => {
+            const sem = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+            document.querySelectorAll('#week-body tr').forEach(row => {
+                COLS.forEach(c => sem[c] += parseFloat(row.querySelector(`[data-col="${c}"]`).value) || 0);
+                sem.prima += parseFloat(row.querySelector(`[data-col="prima"]`).value) || 0;
+            });
+            COLS.forEach(c => document.getElementById('tt-' + c).textContent = sem[c]);
+            document.getElementById('tt-$').textContent = sem.prima.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+            // Total Mes (from synced data for this agent)
+            const agentName = document.getElementById('sel-agent-bit').value;
+            const mesStr = MONTHS_FULL[document.getElementById('sel-month').value - 1] + ' ' + document.getElementById('inp-year').value;
+            const agent = allAgentsData.find(a => a.agentName === agentName);
+            const mesTotals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+            if (agent) {
+                // If the currently edited week isn't saved yet, it won't be in agent.entries accurately.
+                // We show the cloud totals for other weeks + current table values
+                const curSem = document.getElementById('sel-semana').value;
+                agent.entries.filter(e => e.mes === mesStr && e.semana != curSem).forEach(e => {
+                    COLS.forEach(c => mesTotals[c] += e.totales[c]);
+                    mesTotals.prima += e.totales.prima || 0;
+                });
+            }
+            COLS.forEach(c => {
+                const total = mesTotals[c] + sem[c];
+                document.getElementById('mt-' + c).textContent = total;
+            });
+            document.getElementById('mt-$').textContent = (mesTotals.prima + sem.prima).toLocaleString('en-US', { minimumFractionDigits: 2 });
         };
 
         window.validateTable = () => {
