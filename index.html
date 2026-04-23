@@ -1203,6 +1203,12 @@
                         para que puedan vincularse.</p>
                 </div>
                 <div>
+                    <label class="field-label">Código de Promotor (Opcional)</label>
+                    <input type="text" id="inp-promocode" placeholder="Ej. PROMOTOR-XYZ">
+                    <p style="font-size:10px; color:var(--slate); margin-top:5px;">Ingresa el código de tu promotor para
+                        que pueda ver tus KPIs y reportes.</p>
+                </div>
+                <div>
                     <p class="section-label">Agentes en tu Equipo</p>
                     <div class="agent-list" id="agent-list"></div>
                     <p style="font-size:10px; color:var(--slate); margin-top:5px;">Los agentes que ingresen tu código
@@ -1249,7 +1255,7 @@
         const COLS = ['P', 'E', 'C', 'V', 'S'];
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-        let state = { coachName: '', teamCode: '', agents: [], entries: [], reportes: [] };
+        let state = { coachName: '', teamCode: '', promotorCode: '', agents: [], entries: [], reportes: [] };
         let user = null;
         let currentWeeks = [];
         let unsubAgents = null;
@@ -1301,6 +1307,7 @@
                 const data = docSnap.data();
                 state.coachName = data.coachName || '';
                 state.teamCode = data.teamCode || '';
+                state.promotorCode = data.promotorCode || '';
                 state.reportes = data.reportes || [];
                 document.getElementById('team-display').textContent = 'Equipo: ' + (state.teamCode || 'Sin Código');
                 startListeningAgents();
@@ -1317,6 +1324,7 @@
                 await setDoc(doc(db, "coaches", user.email), {
                     coachName: state.coachName,
                     teamCode: state.teamCode,
+                    promotorCode: state.promotorCode,
                     reportes: state.reportes
                 });
                 document.getElementById('team-display').textContent = 'Equipo: ' + (state.teamCode || 'Sin Código');
@@ -1393,6 +1401,7 @@
         window.openConfig = function () {
             document.getElementById('inp-coach').value = state.coachName || '';
             document.getElementById('inp-teamcode').value = state.teamCode || '';
+            document.getElementById('inp-promocode').value = state.promotorCode || '';
             renderAgentList();
             document.getElementById('config-modal').classList.add('open');
         }
@@ -1425,6 +1434,7 @@
 
                 state.coachName = document.getElementById('inp-coach').value.trim();
                 state.teamCode = document.getElementById('inp-teamcode').value.trim();
+                state.promotorCode = document.getElementById('inp-promocode').value.trim();
 
                 await saveState();
                 startListeningAgents();
