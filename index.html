@@ -787,7 +787,7 @@
                 <i class="fa-brands fa-google"></i> Continuar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.6;">
-                Sincronización segura mediante Google Firebase
+                v1.3.1 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -798,6 +798,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-chart-line" style="font-size:22px;margin-right:10px;"></i>PECVS$ Analytics
+                    <small style="font-size:10px; color:var(--slate);">v1.3.1</small>
                 </h1>
                 <p id="coach-display">Coach: —</p>
                 <p id="team-display" style="font-size:10px; color:var(--gold); font-weight:700;">Equipo: Sin Código</p>
@@ -1207,6 +1208,14 @@
                     <p style="font-size:10px; color:var(--slate); margin-top:5px;">Los agentes que ingresen tu código
                         aparecerán aquí automáticamente.</p>
                 </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                    <button class="btn btn-sm" onclick="exportConfig()"><i class="fa fa-file-export"></i>Exportar
+                        Config</button>
+                    <button class="btn btn-sm" onclick="document.getElementById('import-config-file').click()"><i
+                            class="fa fa-file-import"></i>Importar Config</button>
+                    <input type="file" id="import-config-file" accept=".json" style="display:none"
+                        onchange="importConfig(event)">
+                </div>
                 <button class="btn btn-green" onclick="saveConfig()"><i class="fa fa-floppy-disk"></i>Guardar
                     configuración</button>
             </div>
@@ -1265,6 +1274,24 @@
                 document.getElementById('login-overlay').classList.remove('hidden');
             }
         });
+
+        // ─── SERVICE WORKER ──────────────────────────────────────────────────────────
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    reg.onupdatefound = () => {
+                        const newSW = reg.installing;
+                        newSW.onstatechange = () => {
+                            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                                if (confirm('Nueva versión disponible (v1.3.1). ¿Recargar ahora para actualizar?')) {
+                                    window.location.reload();
+                                }
+                            }
+                        };
+                    };
+                }).catch(err => console.error('SW registration failed:', err));
+            });
+        }
 
         async function loadCoachData() {
             if (!user) return;
@@ -1386,11 +1413,72 @@
             `).join('');
         }
 
-        function saveConfig() {
-            state.coachName = document.getElementById('inp-coach').value.trim();
-            saveState();
-            refreshAll();
-            closeConfig();
+        window.saveConfig = async function () {
+            try {
+                // Determine source element to show loading state if possible
+                const btn = (window.event && window.event.target && window.event.target.tagName === 'BUTTON') ? window.event.target : null;
+                const oldHtml = btn ? btn.innerHTML : '';
+                if (btn) {
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+                    btn.disabled = true;
+                }
+
+                state.coachName = document.getElementById('inp-coach').value.trim();
+                state.teamCode = document.getElementById('inp-teamcode').value.trim();
+
+                await saveState();
+                startListeningAgents();
+                refreshAll();
+
+                if (btn) {
+                    btn.innerHTML = '<i class="fa fa-check"></i> ¡Guardado!';
+                    setTimeout(() => {
+                        btn.innerHTML = oldHtml;
+                        btn.disabled = false;
+                        closeConfig();
+                    }, 1000);
+                } else {
+                    closeConfig();
+                }
+            } catch (err) {
+                console.error("Error saving coach:", err);
+                alert("Error al guardar: " + err.message);
+            }
+        }
+
+        window.exportConfig = function () {
+            const config = { coachName: state.coachName, teamCode: state.teamCode };
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `config_coach_${(state.coachName || 'coach').replace(/\s+/g, '_')}.json`;
+            a.click();
+        }
+
+        window.importConfig = function (event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.coachName || data.teamCode) {
+                        if (confirm(`¿Importar configuración de ${data.coachName || 'Sin Nombre'}?`)) {
+                            state.coachName = data.coachName || state.coachName;
+                            state.teamCode = data.teamCode || state.teamCode;
+                            document.getElementById('inp-coach').value = state.coachName;
+                            document.getElementById('inp-teamcode').value = state.teamCode;
+                            await saveState();
+                            startListeningAgents();
+                            refreshAll();
+                            alert("✅ Configuración importada y guardada.");
+                        }
+                    } else {
+                        alert("El archivo no parece ser una configuración válida.");
+                    }
+                } catch (err) { alert("Error al importar: " + err.message); }
+            };
+            reader.readAsText(file);
         }
 
         function refreshAgentSelects() {
