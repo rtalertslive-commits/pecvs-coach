@@ -475,83 +475,145 @@
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('leaderboard',this)"><i class="fa fa-table"></i>
                 Leaderboard / Ratios</button>
+            <button class="tab-btn" onclick="switchTab('bitacora',this)"><i class="fa fa-calendar-days"></i> Bitácora
+                Detallada</button>
             <button class="tab-btn" onclick="switchTab('kpis',this)"><i class="fa fa-chart-column"></i> KPIs
                 (Barras)</button>
             <button class="tab-btn" onclick="switchTab('charts',this)"><i class="fa fa-chart-area"></i>
                 Tendencias</button>
         </div>
 
-        <!-- TAB: LEADERBOARD -->
-        <div id="tab-leaderboard" class="tab-panel active">
+        <!-- TAB: BITACORA DETALLADA -->
+        <div id="tab-bitacora" class="tab-panel">
             <div class="card">
                 <div class="charts-controls">
                     <div>
+                        <label class="field-label">Agente</label>
+                        <select id="sel-agent-bit" onchange="autoLoadBitacora()"></select>
+                    </div>
+                    <div>
                         <label class="field-label">Mes</label>
-                        <select id="lb-mes-filter" onchange="renderLeaderboard()">
-                            <option value="">Todos los meses</option>
+                        <select id="sel-month" onchange="updateBitacoraCalendar()">
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4" selected>Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="field-label">Año</label>
+                        <input type="number" id="inp-year" value="2026" style="width:100px;"
+                            onchange="updateBitacoraCalendar()">
+                    </div>
+                    <div>
+                        <label class="field-label">Semana</label>
+                        <select id="sel-semana" onchange="updateWeekTable()"></select>
+                    </div>
                 </div>
+
+                <div id="week-info" style="font-size:11px;color:var(--teal);margin-bottom:10px;"></div>
                 <div class="table-scroll">
-                    <table class="lb-table">
-                        <thead id="lb-thead"></thead>
-                        <tbody id="lb-body"></tbody>
-                        <tfoot id="lb-foot"></tfoot>
+                    <table class="lb-table" style="min-width: 800px;">
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>P</th>
+                                <th>E</th>
+                                <th>C</th>
+                                <th>V</th>
+                                <th>S</th>
+                                <th>$ Prima</th>
+                                <th>Semaforo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="week-body"></tbody>
                     </table>
                 </div>
+                <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
+                    <button class="btn btn-green" id="btn-save-bit" onclick="saveBitacoraEntry()"><i
+                            class="fa fa-floppy-disk"></i> Guardar Cambios (Nube)</button>
+                    <span id="save-msg-bit" style="font-size:12px;color:var(--green);display:none;"><i
+                            class="fa fa-check"></i> Guardado exitosamente</span>
+                </div>
             </div>
         </div>
+        <div class="card">
+            <div class="charts-controls">
+                <div>
+                    <label class="field-label">Mes</label>
+                    <select id="lb-mes-filter" onchange="renderLeaderboard()">
+                        <option value="">Todos los meses</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table class="lb-table">
+                    <thead id="lb-thead"></thead>
+                    <tbody id="lb-body"></tbody>
+                    <tfoot id="lb-foot"></tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
 
-        <!-- TAB: KPIs -->
-        <div id="tab-kpis" class="tab-panel">
-            <div class="card">
-                <div class="charts-controls">
-                    <div><label class="field-label">Mes</label><select id="kpi-mes-sel" onchange="renderKPIs()">
-                            <option value="">Todos los meses</option>
-                        </select></div>
+    <!-- TAB: KPIs -->
+    <div id="tab-kpis" class="tab-panel">
+        <div class="card">
+            <div class="charts-controls">
+                <div><label class="field-label">Mes</label><select id="kpi-mes-sel" onchange="renderKPIs()">
+                        <option value="">Todos los meses</option>
+                    </select></div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card full">
+                    <h3>Prima Neta por Agente</h3>
+                    <div class="chart-wrap"><canvas id="kpiPrima"></canvas></div>
                 </div>
-                <div class="charts-grid">
-                    <div class="chart-card full">
-                        <h3>Prima Neta por Agente</h3>
-                        <div class="chart-wrap"><canvas id="kpiPrima"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>% Eficiencia: Conversión P ➔ V</h3>
-                        <div class="chart-wrap"><canvas id="kpiEfectividad"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Cierres vs Contactos</h3>
-                        <div class="chart-wrap"><canvas id="kpiVolumen"></canvas></div>
-                    </div>
+                <div class="chart-card">
+                    <h3>% Eficiencia: Conversión P ➔ V</h3>
+                    <div class="chart-wrap"><canvas id="kpiEfectividad"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Cierres vs Contactos</h3>
+                    <div class="chart-wrap"><canvas id="kpiVolumen"></canvas></div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- TAB: TENDENCIAS -->
-        <div id="tab-charts" class="tab-panel">
-            <div class="card">
-                <div class="charts-controls">
-                    <div><label class="field-label">Agente</label><select id="chart-agent-sel"
-                            onchange="renderCharts()"></select></div>
-                    <div><label class="field-label">Mes</label><select id="chart-mes-sel"
-                            onchange="renderCharts()"></select></div>
+    <!-- TAB: TENDENCIAS -->
+    <div id="tab-charts" class="tab-panel">
+        <div class="card">
+            <div class="charts-controls">
+                <div><label class="field-label">Agente</label><select id="chart-agent-sel"
+                        onchange="renderCharts()"></select></div>
+                <div><label class="field-label">Mes</label><select id="chart-mes-sel"
+                        onchange="renderCharts()"></select></div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card full">
+                    <h3>Volumen PECVS Semanal</h3>
+                    <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
                 </div>
-                <div class="charts-grid">
-                    <div class="chart-card full">
-                        <h3>Volumen PECVS Semanal</h3>
-                        <div class="chart-wrap"><canvas id="chartVolume"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Eficiencia Total (% P ➔ V)</h3>
-                        <div class="chart-wrap"><canvas id="chartEfeTotal"></canvas></div>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Prima Neta</h3>
-                        <div class="chart-wrap"><canvas id="chartPrima"></canvas></div>
-                    </div>
+                <div class="chart-card">
+                    <h3>Eficiencia Total (% P ➔ V)</h3>
+                    <div class="chart-wrap"><canvas id="chartEfeTotal"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3>Prima Neta</h3>
+                    <div class="chart-wrap"><canvas id="chartPrima"></canvas></div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- CONFIG MODAL -->
@@ -622,6 +684,7 @@
             if (snap.exists()) {
                 coachState = snap.data();
                 document.getElementById('team-display').textContent = 'Equipo: ' + (coachState.teamCode || 'Sin Código');
+                updateBitacoraCalendar(); // Init calendar
                 renderReporteHistory();
                 tryLoadReporte(); // Load current month if exists
             } else {
@@ -665,10 +728,8 @@
 
         function refreshAgentSelects() {
             const agents = [...new Set(allAgentsData.map(a => a.agentName))].sort();
-            const el = document.getElementById('chart-agent-sel');
-            const cur = el.value;
-            el.innerHTML = '<option value="__all__">Todo el Equipo</option>' + agents.map(a => `<option value="${a}">${a}</option>`).join('');
-            if (agents.includes(cur)) el.value = cur;
+            document.getElementById('chart-agent-sel').innerHTML = '<option value="__all__">Todo el Equipo</option>' + agents.map(a => `<option value="${a}">${a}</option>`).join('');
+            document.getElementById('sel-agent-bit').innerHTML = agents.map(a => `<option value="${a}">${a}</option>`).join('');
         }
 
         function refreshMonthFilters() {
@@ -693,6 +754,105 @@
             btn.classList.add('active');
             if (name === 'kpis') renderKPIs();
             if (name === 'charts') renderCharts();
+            if (name === 'bitacora') autoLoadBitacora();
+        };
+
+        // --- BITACORA LOGIC ---
+        const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        let currentWeeks = [];
+
+        window.updateBitacoraCalendar = () => {
+            const month = parseInt(document.getElementById('sel-month').value);
+            const year = parseInt(document.getElementById('inp-year').value);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const firstDayMon = (new Date(year, month - 1, 1).getDay() + 6) % 7;
+            currentWeeks = []; let week = []; let dow = firstDayMon;
+            for (let d = 1; d <= daysInMonth; d++) {
+                week.push({ dayName: DAYS[dow], date: d });
+                if (dow === 6 || d === daysInMonth) { currentWeeks.push(week); week = []; }
+                dow = (dow + 1) % 7;
+            }
+            const sel = document.getElementById('sel-semana');
+            sel.innerHTML = currentWeeks.map((w, i) => `<option value="${i + 1}">Semana ${i + 1}</option>`).join('');
+            updateWeekTable();
+        };
+
+        window.updateWeekTable = () => {
+            const semIdx = parseInt(document.getElementById('sel-semana').value) - 1;
+            const weekDays = currentWeeks[semIdx] || [];
+            const tbody = document.getElementById('week-body');
+            tbody.innerHTML = weekDays.map(d => `
+                <tr data-day="${d.dayName}">
+                    <td class="day-label">${d.dayName} ${d.date}</td>
+                    ${COLS.map(c => `<td><input type="number" class="num-input" style="width:60px" data-day="${d.dayName}" data-col="${c}" value="0" oninput="validateTable()"></td>`).join('')}
+                    <td><input type="number" class="num-input" style="width:80px" data-day="${d.dayName}" data-col="prima" value="0" oninput="validateTable()"></td>
+                    <td id="status-${d.dayName}">—</td>
+                </tr>`).join('');
+            autoLoadBitacora();
+        };
+
+        window.validateTable = () => {
+            document.querySelectorAll('#week-body tr').forEach(row => {
+                const day = row.dataset.day;
+                const vals = {};
+                COLS.forEach(c => vals[c] = parseFloat(row.querySelector(`[data-col="${c}"]`).value) || 0);
+                const prima = parseFloat(row.querySelector(`[data-col="prima"]`).value) || 0;
+                const allZero = COLS.every(c => vals[c] === 0) && prima === 0;
+                const ok = vals.P >= vals.E && vals.E >= vals.C && vals.C >= vals.V && vals.S >= vals.V && vals.S <= (vals.V * 2);
+                row.querySelector(`#status-${day}`).textContent = allZero ? '—' : (ok ? '🟢' : '🔴');
+            });
+        };
+
+        const MONTHS_FULL = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        window.autoLoadBitacora = () => {
+            const agentName = document.getElementById('sel-agent-bit').value;
+            if (!agentName) return;
+            const mes = MONTHS_FULL[document.getElementById('sel-month').value - 1] + ' ' + document.getElementById('inp-year').value;
+            const sem = document.getElementById('sel-semana').value;
+            const agent = allAgentsData.find(a => a.agentName === agentName);
+            const entry = agent ? agent.entries.find(e => e.mes === mes && e.semana == sem) : null;
+
+            document.querySelectorAll('#week-body input').forEach(i => i.value = 0);
+            if (entry) {
+                entry.dias.forEach(d => {
+                    COLS.forEach(c => { const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`); if (inp) inp.value = d[c]; });
+                    const pi = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`); if (pi) pi.value = d.prima || 0;
+                });
+            }
+            validateTable();
+        };
+
+        window.saveBitacoraEntry = async () => {
+            const agentName = document.getElementById('sel-agent-bit').value;
+            const mes = MONTHS_FULL[document.getElementById('sel-month').value - 1] + ' ' + document.getElementById('inp-year').value;
+            const sem = document.getElementById('sel-semana').value;
+
+            const dias = [];
+            document.querySelectorAll('#week-body tr').forEach(row => {
+                const d = row.dataset.day;
+                const entry = { dia: d };
+                COLS.forEach(c => entry[c] = parseFloat(row.querySelector(`[data-col="${c}"]`).value) || 0);
+                entry.prima = parseFloat(row.querySelector(`[data-col="prima"]`).value) || 0;
+                dias.push(entry);
+            });
+            const totales = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+            dias.forEach(d => { COLS.forEach(c => totales[c] += d[c]); totales.prima += d.prima; });
+
+            // This only saves if the selected agent IS the coach (or if we implement admin override)
+            // For now, let's assume the coach can edit THEIR own data if they appear in allAgentsData
+            // Or better: save to `users/{coachEmail}` and add them to the team view.
+            const coachAsAgent = {
+                agentName: user.displayName,
+                teamCode: coachState.teamCode,
+                entries: allAgentsData.find(a => a.agentName === user.displayName)?.entries || []
+            };
+            const eIdx = coachAsAgent.entries.findIndex(e => e.mes === mes && e.semana == sem);
+            const newEntry = { agent: user.displayName, mes, semana: sem, dias, totales };
+            if (eIdx >= 0) coachAsAgent.entries[eIdx] = newEntry; else coachAsAgent.entries.push(newEntry);
+
+            await setDoc(doc(db, "users", user.email), coachAsAgent);
+            const msg = document.getElementById('save-msg-bit');
+            msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2000);
         };
 
         // --- DASHBOARD LOGIC (SIMILAR TO ORIGINAL BUT ADAPTED FOR COMPOSITE STATE) ---
