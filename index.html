@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PECVS$ — Coach Analytics</title>
+    <title>PECVS$ — Coach Analytics v1.3.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
@@ -794,7 +794,7 @@
                 <i class="fa-brands fa-google"></i> Continuar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.6;">
-                v1.3.1 — Sincronización mediante Google Firebase
+                v1.3.2 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -805,7 +805,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-chart-line" style="font-size:22px;margin-right:10px;"></i>PECVS$ Analytics
-                    <small style="font-size:10px; color:var(--slate);">v1.3.1</small>
+                    <small style="font-size:10px; color:var(--slate);">v1.3.2</small>
                 </h1>
                 <p id="coach-display">Coach: —</p>
                 <p id="team-display" style="font-size:10px; color:var(--gold); font-weight:700;">Equipo: Sin Código</p>
@@ -1275,7 +1275,7 @@
                 user = u;
                 document.getElementById('login-overlay').classList.add('hidden');
                 await loadCoachData();
-                // Forced redeploy to clear stuck GitHub Actions queue - v1.3.1
+                // Incremental version update to clear GitHub Actions queue - v1.3.2
                 init();
             } else {
                 user = null;
@@ -1291,7 +1291,7 @@
                         const newSW = reg.installing;
                         newSW.onstatechange = () => {
                             if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                                if (confirm('Nueva versión disponible (v1.3.1). ¿Recargar ahora para actualizar?')) {
+                                if (confirm('Nueva versión disponible (v1.3.2). ¿Recargar ahora para actualizar?')) {
                                     window.location.reload();
                                 }
                             }
