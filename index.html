@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PECVS$ — Coach Analytics v1.3.3</title>
+    <title>PECVS$ — Coach Analytics v1.3.4</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
@@ -794,7 +794,7 @@
                 <i class="fa-brands fa-google"></i> Continuar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.6;">
-                v1.3.3 — Sincronización mediante Google Firebase
+                v1.3.4 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -805,7 +805,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-chart-line" style="font-size:22px;margin-right:10px;"></i>PECVS$ Analytics
-                    <small style="font-size:10px; color:var(--slate);">v1.3.3</small>
+                    <small style="font-size:10px; color:var(--slate);">v1.3.4</small>
                 </h1>
                 <p id="coach-display">Coach: —</p>
                 <p id="team-display" style="font-size:10px; color:var(--gold); font-weight:700;">Equipo: Sin Código</p>
@@ -1275,7 +1275,7 @@
                 user = u;
                 document.getElementById('login-overlay').classList.add('hidden');
                 await loadCoachData();
-                // Bug fixes for reactivity and data loading - v1.3.3
+                // Deep sync fixes and robust rendering - v1.3.4
                 init();
             } else {
                 user = null;
@@ -1291,7 +1291,7 @@
                         const newSW = reg.installing;
                         newSW.onstatechange = () => {
                             if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                                if (confirm('Nueva versión disponible (v1.3.3). ¿Recargar ahora para actualizar?')) {
+                                if (confirm('Nueva versión disponible (v1.3.4). ¿Recargar ahora para actualizar?')) {
                                     window.location.reload();
                                 }
                             }
@@ -1501,6 +1501,11 @@
                     el.innerHTML = '<option value="">— Selecciona agente —</option>' + opts;
                 }
                 el.value = cur;
+                // If no agent selected but we have options, select the first real agent automatically
+                if (id === 'sel-agent' && !el.value && opts.length > 0) {
+                    const firstAgent = state.agents[0];
+                    if (firstAgent) el.value = firstAgent;
+                }
             });
         }
 
@@ -1604,8 +1609,12 @@
 
         // ─── SAVE / LOAD ENTRY ────────────────────────────────────────────────────────
         function getMesStr() {
-            const m = parseInt(document.getElementById('sel-month').value);
-            const y = parseInt(document.getElementById('inp-year').value);
+            const elM = document.getElementById('sel-month');
+            const elY = document.getElementById('inp-year');
+            if (!elM || !elY) return "";
+            const m = parseInt(elM.value);
+            const y = parseInt(elY.value);
+            if (isNaN(m) || isNaN(y)) return "";
             return MONTHS_ES[m - 1] + ' ' + y;
         }
 
@@ -1644,14 +1653,29 @@
         }
 
         function autoLoadBitacora() {
-            const agent = document.getElementById('sel-agent').value;
-            const semana = document.getElementById('sel-semana').value;
+            const agentEl = document.getElementById('sel-agent');
+            if (!agentEl) return;
+            const agent = agentEl.value.trim();
+            const semanaEl = document.getElementById('sel-semana');
+            if (!semanaEl) return;
+            const semana = semanaEl.value;
             const mes = getMesStr();
-            const entry = state.entries.find(e => e.agent === agent && e.mes === mes && e.semana == semana);
+            if (!agent || !semana || !mes) { clearForm(false); return; }
+
+            const entry = state.entries.find(e =>
+                e.agent.trim() === agent &&
+                e.mes.trim() === mes.trim() &&
+                e.semana == semana
+            );
             if (!entry) { clearForm(false); return; }
+
             entry.dias.forEach(d => {
-                COLS.forEach(c => { const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`); if (inp) inp.value = d[c]; });
-                const pi = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`); if (pi) pi.value = d.prima;
+                COLS.forEach(c => {
+                    const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`);
+                    if (inp) inp.value = d[c];
+                });
+                const pi = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`);
+                if (pi) pi.value = d.prima;
             });
             updateTotals(false);
         }
@@ -1659,8 +1683,9 @@
         // ─── HISTORY ──────────────────────────────────────────────────────────────────
         function renderHistory() {
             const grid = document.getElementById('history-grid');
+            if (!grid) return;
             if (!state.entries.length) {
-                grid.innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i>No hay entradas aún. Llena y guarda la bitácora arriba.</div>';
+                grid.innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i>No hay entradas aún. Los datos de los agentes aparecerán aquí automáticamente.</div>';
                 return;
             }
             grid.innerHTML = state.entries.map((e, i) => `
@@ -1674,29 +1699,24 @@
 
         function loadEntryIntoForm(i) {
             const e = state.entries[i];
-            document.getElementById('sel-agent').value = e.agent;
-            // parse mes string (e.g. "Abril 2026") back to month+year
+            const selAgent = document.getElementById('sel-agent');
+            if (selAgent) selAgent.value = e.agent;
+
             const parts = e.mes.split(' ');
             const mIdx = MONTHS_ES.indexOf(parts[0]);
             if (mIdx >= 0) {
                 document.getElementById('sel-month').value = mIdx + 1;
                 document.getElementById('inp-year').value = parseInt(parts[1]) || new Date().getFullYear();
-                updateBitacoraCalendar(); // rebuild weeks
+                updateBitacoraCalendar();
             }
             document.getElementById('sel-semana').value = e.semana;
-            updateWeekTable(); // rebuild table for that semana
-            e.dias.forEach(d => {
-                COLS.forEach(c => { const inp = document.querySelector(`input[data-day="${d.dia}"][data-col="${c}"]`); if (inp) inp.value = d[c]; });
-                const pi = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`); if (pi) pi.value = d.prima;
-            });
-            updateTotals();
-            switchTab('bitacora', document.querySelector('.tab-btn'));
+            updateWeekTable();
             document.getElementById('modal-bitacora-log').classList.remove('open');
         }
 
         function deleteEntry(ev, i) {
             ev.stopPropagation();
-            if (!confirm('¿Eliminar esta entrada?')) return;
+            if (!confirm('¿Eliminar esta entrada? (Solo local)')) return;
             state.entries.splice(i, 1);
             saveState();
             refreshAll();
@@ -1707,9 +1727,12 @@
             const meses = [...new Set(state.entries.map(e => e.mes))];
             const opts = meses.map(m => `<option value="${m}">${m}</option>`).join('');
             ['lb-mes-filter', 'chart-mes-sel', 'kpi-mes-sel'].forEach(id => {
-                const el = document.getElementById(id); const cur = el.value;
-                el.innerHTML = (id === 'lb-mes-filter' ? '<option value="">Todos los meses</option>' : '<option value="">Todos los meses</option>') + opts;
+                const el = document.getElementById(id);
+                if (!el) return;
+                const cur = el.value;
+                el.innerHTML = '<option value="">Todos los meses</option>' + opts;
                 if (meses.includes(cur)) el.value = cur;
+                else if (cur === "" || !cur) el.value = "";
             });
         }
 
@@ -1721,8 +1744,10 @@
             showRedData = !showRedData;
             renderLeaderboard();
             const btn = document.getElementById('btn-tog-red');
-            btn.innerHTML = showRedData ? '<i class="fa fa-eye-slash"></i> Ocultar Conciliación' : '<i class="fa fa-eye"></i> Ver Conciliación Real';
-            btn.classList.toggle('btn-red', showRedData);
+            if (btn) {
+                btn.innerHTML = showRedData ? '<i class="fa fa-eye-slash"></i> Ocultar Conciliación' : '<i class="fa fa-eye"></i> Ver Conciliación Real';
+                btn.classList.toggle('btn-red', showRedData);
+            }
         }
 
         function validateDay(d) {
@@ -1742,24 +1767,29 @@
         }
 
         function renderLeaderboard() {
-            const mesF = document.getElementById('lb-mes-filter').value;
-            const semF = document.getElementById('lb-sem-filter').value;
+            const mesFilterEl = document.getElementById('lb-mes-filter');
+            const semFilterEl = document.getElementById('lb-sem-filter');
+            if (!mesFilterEl || !semFilterEl) return;
+
+            const mesF = mesFilterEl.value;
+            const semF = semFilterEl.value;
+
             let filtered = state.entries.filter(e =>
                 (!mesF || e.mes === mesF) && (!semF || e.semana == semF)
             );
 
-            // aggregate per agent (re-summing only valid days + tracking red activity)
             const agMap = {};
             filtered.forEach(e => {
-                if (!agMap[e.agent]) agMap[e.agent] = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0, redS: 0, redPrima: 0 };
+                const agKey = e.agent.trim();
+                if (!agMap[agKey]) agMap[agKey] = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0, redS: 0, redPrima: 0 };
                 e.dias.forEach(d => {
                     const { ok } = validateDay(d);
                     if (ok) {
-                        COLS.forEach(c => agMap[e.agent][c] += d[c]);
-                        agMap[e.agent].prima += d.prima;
+                        COLS.forEach(c => agMap[agKey][c] += d[c]);
+                        agMap[agKey].prima += d.prima;
                     } else {
-                        agMap[e.agent].redS += d.S;
-                        agMap[e.agent].redPrima += d.prima;
+                        agMap[agKey].redS += d.S;
+                        agMap[agKey].redPrima += d.prima;
                     }
                 });
             });
@@ -1768,14 +1798,9 @@
             const thead = document.getElementById('lb-thead');
             const tbody = document.getElementById('lb-body');
             const tfoot = document.getElementById('lb-foot');
+            if (!thead || !tbody || !tfoot) return;
 
-            if (!agents.length) {
-                tbody.innerHTML = `<tr class="no-data-row"><td colspan="${showRedData ? 20 : 17}">No hay datos con los filtros actuales.</td></tr>`;
-                tfoot.innerHTML = ''; return;
-            }
-
-            // Dynamic Header
-            thead.innerHTML = `
+            const headHtml = `
                 <tr>
                     <th rowspan="2">#</th>
                     <th rowspan="2">Agente</th>
@@ -1796,8 +1821,13 @@
                     <th style="border-left:1px solid var(--red);color:var(--gold)">$ TOTAL</th>
                     ` : ''}
                 </tr>`;
+            thead.innerHTML = headHtml;
 
-            // sort by prima desc
+            if (!agents.length) {
+                tbody.innerHTML = `<tr class="no-data-row"><td colspan="${showRedData ? 20 : 17}">No hay datos con los filtros actuales.</td></tr>`;
+                tfoot.innerHTML = ''; return;
+            }
+
             agents.sort((a, b) => agMap[b].prima - agMap[a].prima);
 
             tbody.innerHTML = agents.map((ag, i) => {
@@ -1805,7 +1835,7 @@
                 const primaFmt = d.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const redPrimaFmt = d.redPrima.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                 const totalPrimaFmt = (d.prima + d.redPrima).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                return `<tr>
+                return `< tr >
                     <td class="rank-num">${i + 1}</td>
                     <td class="agent-name-cell">${ag}</td>
                     <td style="border-left:2px solid #475569">${d.P}</td><td>${d.E}</td><td>${d.C}</td><td>${d.V}</td><td>${d.S}</td>
@@ -1822,8 +1852,9 @@
                     <td style="border-left:2px solid var(--red);color:var(--red);opacity:0.8">${d.redS}</td>
                     <td style="color:var(--red);opacity:0.8">$${redPrimaFmt}</td>
                     <td style="border-left:1px solid var(--red);font-weight:700;color:var(--gold)">$${totalPrimaFmt}</td>
-                    ` : ''}
-                </tr>`;
+                    ` : ''
+                    }
+                </tr > `;
             }).join('');
 
             // totals row
@@ -1850,7 +1881,8 @@
                 <td style="border-left:2px solid var(--red);color:var(--red)">${tot.redS}</td>
                 <td style="color:var(--red)">$${totRedPrima}</td>
                 <td style="border-left:1px solid var(--red);color:var(--gold);font-weight:800">$${totFinal}</td>
-                ` : ''}
+                ` : ''
+                }
             </tr>`;
         }
 
@@ -1872,7 +1904,7 @@
             );
 
             // Build x-axis labels: unique "mes · SemN" sorted
-            const labelSet = [...new Set(entries.map(e => `${e.mes}·S${e.semana}`))].sort();
+            const labelSet = [...new Set(entries.map(e => `${e.mes}·S${e.semana} `))].sort();
             const labels = labelSet.map(l => l.replace('·', ' · Sem '));
 
             // Aggregate per label (re-summing only valid days)
@@ -2111,13 +2143,13 @@
                         else if (d.V === 0 && d.S > 0) razon = 'Si hay solicitudes, como mínimo tiene que haber 1 cierre';
                         else if (d.S > d.V * 2) razon = 'Solicitudes > Doble de Cierres (Máx 2V)';
                         else if (d.S > 0 && d.prima < 1) razon = 'Debe ingresar Prima ($) si hay solicitudes';
-                        errors.push(`🚩 [${e.agent}] ${e.mes} - Sem ${e.semana} (${d.dia}): Rompe jerarquía (${razon})`);
+                        errors.push(`🚩[${e.agent}] ${e.mes} - Sem ${e.semana} (${d.dia}): Rompe jerarquía(${razon})`);
                     }
                 });
             });
 
             if (errors.length > 0) {
-                if (!confirm(`¿Seguro que quieres guardar los cambios? Tienes estas inconsistencias en los registros de la bitácora:\n\n${errors.join('\n')}`)) {
+                if (!confirm(`¿Seguro que quieres guardar los cambios ? Tienes estas inconsistencias en los registros de la bitácora: \n\n${errors.join('\n')} `)) {
                     return;
                 }
             }
@@ -2143,7 +2175,7 @@
 
                     let mode = 'replace';
                     if (isInd) {
-                        const choice = confirm(`Has seleccionado un reporte individual de: ${data.agentName}\n\nPresiona ACEPTAR para CONSOLIDAR/SUMAR sus datos a tu equipo actual.\nPresiona CANCELAR para REEMPLAZAR todo tu tablero con este archivo.`);
+                        const choice = confirm(`Has seleccionado un reporte individual de: ${data.agentName} \n\nPresiona ACEPTAR para CONSOLIDAR / SUMAR sus datos a tu equipo actual.\nPresiona CANCELAR para REEMPLAZAR todo tu tablero con este archivo.`);
                         mode = choice ? 'merge' : 'replace';
                     } else {
                         if (!confirm(`Importar datos de ${file.name} (Coach: ${sourceName})?\nEsto reemplazará todos tus datos actuales.`)) return;
@@ -2239,10 +2271,10 @@
             const list = state.reportes || [];
             if (!list.length) { el.innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i>No hay reportes guardados aún.</div>'; return; }
             el.innerHTML = list.map(r => `
-    <div class="history-chip" onclick="loadReporte('${r.mes}')" title="Cargar reporte">
+                < div class="history-chip" onclick = "loadReporte('${r.mes}')" title = "Cargar reporte" >
       <span style="font-weight:700;color:var(--gold)">${r.mes}</span>
       <span style="color:var(--slate);font-size:11px;">${new Date(r.fecha).toLocaleDateString('es-MX')}</span>
-    </div>`).join('');
+    </div >`).join('');
         }
 
         // ─── BOOT ─────────────────────────────────────────────────────────────────────
