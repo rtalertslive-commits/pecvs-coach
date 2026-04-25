@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PECVS$ — Coach Analytics v1.3.6</title>
+    <title>PECVS$ — Coach Analytics v1.3.7</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700&display=swap"
@@ -787,7 +787,7 @@
                 <i class="fa-brands fa-google"></i> Continuar con Google
             </button>
             <div style="margin-top: 25px; font-size: 11px; color: var(--slate); opacity: 0.6;">
-                v1.3.6 — Sincronización mediante Google Firebase
+                v1.3.7 — Sincronización mediante Google Firebase
             </div>
         </div>
     </div>
@@ -798,7 +798,7 @@
         <div class="header">
             <div class="header-left">
                 <h1><i class="fa-solid fa-chart-line" style="font-size:22px;margin-right:10px;"></i>PECVS$ Analytics
-                    <small style="font-size:10px; color:var(--slate);">v1.3.6</small>
+                    <small style="font-size:10px; color:var(--slate);">v1.3.7</small>
                 </h1>
                 <p id="coach-display">Coach: —</p>
                 <p id="team-display" style="font-size:10px; color:var(--gold); font-weight:700;">Equipo: Sin Código</p>
@@ -885,13 +885,23 @@
                     <tbody id="week-body"></tbody>
                     <tfoot>
                         <tr>
-                            <td class="day-label">TOTAL</td>
+                            <td class="day-label">TOTAL SEM</td>
                             <td class="total-cell" id="tt-P">0</td>
                             <td class="total-cell" id="tt-E">0</td>
                             <td class="total-cell" id="tt-C">0</td>
                             <td class="total-cell" id="tt-V">0</td>
                             <td class="total-cell" id="tt-S">0</td>
                             <td class="total-cell" id="tt-$">$0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="day-label">TOTAL MES</td>
+                            <td class="total-cell" id="ttm-P">0</td>
+                            <td class="total-cell" id="ttm-E">0</td>
+                            <td class="total-cell" id="ttm-C">0</td>
+                            <td class="total-cell" id="ttm-V">0</td>
+                            <td class="total-cell" id="ttm-S">0</td>
+                            <td class="total-cell" id="ttm-$">$0</td>
                             <td></td>
                         </tr>
                     </tfoot>
@@ -915,7 +925,7 @@
                 <div class="lb-filters">
                     <div>
                         <label class="field-label">Filtrar por mes</label>
-                        <select id="lb-mes-filter" onchange="renderLeaderboard()">
+                        <select id="lb-mes-filter" onchange="refreshLeaderboardWeeks(); renderLeaderboard()">
                             <option value="">Todos los meses</option>
                         </select>
                     </div>
@@ -928,6 +938,7 @@
                             <option value="3">Semana 3</option>
                             <option value="4">Semana 4</option>
                             <option value="5">Semana 5</option>
+                            <option value="6">Semana 6</option>
                         </select>
                     </div>
                     <div style="margin-top:18px;">
@@ -995,9 +1006,13 @@
             <div class="card">
                 <div class="charts-controls">
                     <div>
-                        <label class="field-label">Mes</label>
-                        <select id="kpi-mes-sel" onchange="renderKPIs()">
-                            <option value="">Todos los meses</option>
+                        <label class="field-label">Período</label>
+                        <select id="kpi-period-sel" onchange="renderKPIs()">
+                            <option value="1m">Último mes</option>
+                            <option value="3m">Últimos 3 meses</option>
+                            <option value="6m">Últimos 6 meses</option>
+                            <option value="12m">Últimos 12 meses</option>
+                            <option value="all">Todo el historial</option>
                         </select>
                     </div>
                 </div>
@@ -1058,9 +1073,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="field-label">Mes</label>
-                        <select id="chart-mes-sel" onchange="renderCharts()">
-                            <option value="">Todos los meses</option>
+                        <label class="field-label">Período</label>
+                        <select id="chart-period-sel" onchange="renderCharts()">
+                            <option value="12m">Últimos 12 meses</option>
+                            <option value="3m">Últimos 3 meses</option>
+                            <option value="6m">Últimos 6 meses</option>
+                            <option value="all">Todo el historial</option>
                         </select>
                     </div>
                 </div>
@@ -1089,21 +1107,20 @@
             </div>
         </div>
 
-        <!-- ═══════════════════ TAB: REPORTE MENSUAL ═══════════════════ -->
+        <!-- ═══════════════════ TAB: REPORTE VENTAS ═══════════════════ -->
         <div id="tab-reporte" class="tab-panel">
             <div class="card">
-                <p class="card-title"><i class="fa fa-file-lines"></i> Reporte Mensual del Coach</p>
-                <div class="info-box">Este espacio es para que el coach registre su análisis, observaciones y
-                    compromisos del mes. Queda incluido al exportar el JSON para enviarlo a dirección.</div>
+                <p class="card-title"><i class="fa fa-file-lines"></i> Reporte Ventas</p>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
                     <div style="display:flex;gap:8px;">
                         <div style="flex:1;">
                             <label class="field-label">Mes del reporte</label>
                             <select id="rpt-mes" onchange="tryLoadReporte()">
+                                <option value="">------</option>
                                 <option value="Enero">Enero</option>
                                 <option value="Febrero">Febrero</option>
                                 <option value="Marzo">Marzo</option>
-                                <option value="Abril" selected>Abril</option>
+                                <option value="Abril">Abril</option>
                                 <option value="Mayo">Mayo</option>
                                 <option value="Junio">Junio</option>
                                 <option value="Julio">Julio</option>
@@ -1116,15 +1133,24 @@
                         </div>
                         <div style="width:100px;">
                             <label class="field-label">Año</label>
-                            <input type="number" id="rpt-year" value="2026" min="2020" max="2040"
-                                onchange="tryLoadReporte()">
+                            <select id="rpt-year" onchange="tryLoadReporte()">
+                                <option value="">------</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                                <option value="2028">2028</option>
+                                <option value="2029">2029</option>
+                                <option value="2030">2030</option>
+                                <option value="2031">2031</option>
+                                <option value="2032">2032</option>
+                                <option value="2033">2033</option>
+                                <option value="2034">2034</option>
+                                <option value="2035">2035</option>
+                            </select>
                         </div>
                     </div>
                     <div style="display:flex;align-items:flex-end;gap:8px;">
                         <button class="btn btn-green" onclick="saveReporte()"><i class="fa fa-floppy-disk"></i>Guardar
                             reporte</button>
-                        <button class="btn btn-red btn-sm" onclick="deleteReporte()"><i
-                                class="fa fa-trash"></i>Eliminar</button>
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -1155,6 +1181,46 @@
                     <button class="btn btn-sm"
                         onclick="document.getElementById('modal-reporte-log').classList.add('open')"><i
                             class="fa fa-list"></i> Ver log (reportes)</button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN RECLUTAMIENTO -->
+            <div class="card" style="margin-top:20px;">
+                <p class="card-title"><i class="fa fa-people-group"></i> Reclutamiento</p>
+
+                <!-- Primera pregunta -->
+                <div style="margin-bottom:20px;">
+                    <label class="field-label">¿Actualmente tienes en entrenamiento algún prospecto a agente que todavía no tenga clave?</label>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button class="btn btn-sm" onclick="handleReclutamientoQ1('si')" id="btn-reclutamiento-si" style="flex:1;">Sí</button>
+                        <button class="btn btn-sm" onclick="handleReclutamientoQ1('no')" id="btn-reclutamiento-no" style="flex:1;">Todavía no</button>
+                    </div>
+                </div>
+
+                <!-- Segunda pregunta (oculta) -->
+                <div id="reclutamiento-q2" style="display:none; margin-bottom:20px;">
+                    <label class="field-label">¿Cuántos tienes a tu cargo?</label>
+                    <input type="number" id="reclutamiento-cantidad" min="0" max="10" placeholder="Cantidad de prospectos" style="width:100%; padding:8px; border:1px solid var(--slate); border-radius:4px; background:var(--dark-bg); color:var(--light);">
+                </div>
+
+                <!-- Tercera pregunta (oculta) -->
+                <div id="reclutamiento-q3" style="display:none; margin-bottom:20px;">
+                    <label class="field-label">¿Cómo se llama(n)?</label>
+                    <textarea id="reclutamiento-nombres" rows="3"
+                        placeholder="Escribe los nombres separados por comas..."></textarea>
+                </div>
+
+                <!-- Cuarta pregunta (oculta) -->
+                <div id="reclutamiento-q4" style="display:none; margin-bottom:20px;">
+                    <label class="field-label">¿Para cuando lo puedes formalizar a agente con clave?</label>
+                    <textarea id="reclutamiento-compromiso" rows="3"
+                        placeholder="Describe tu compromiso de formalización..."></textarea>
+                </div>
+
+                <!-- Historial de respuestas -->
+                <div id="reclutamiento-historial" style="margin-top:20px;">
+                    <p class="field-label">Historial de respuestas</p>
+                    <div id="reclutamiento-lista" style="font-size:12px; color:var(--slate);"></div>
                 </div>
             </div>
         </div>
@@ -1214,14 +1280,6 @@
                     <p style="font-size:10px; color:var(--slate); margin-top:5px;">Los agentes que ingresen tu código
                         aparecerán aquí automáticamente.</p>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-                    <button class="btn btn-sm" onclick="exportConfig()"><i class="fa fa-file-export"></i>Exportar
-                        Config</button>
-                    <button class="btn btn-sm" onclick="document.getElementById('import-config-file').click()"><i
-                            class="fa fa-file-import"></i>Importar Config</button>
-                    <input type="file" id="import-config-file" accept=".json" style="display:none"
-                        onchange="importConfig(event)">
-                </div>
                 <button class="btn btn-green" onclick="saveConfig()"><i class="fa fa-floppy-disk"></i>Guardar
                     configuración</button>
             </div>
@@ -1231,13 +1289,13 @@
     <script type="module">
         // --- FIREBASE CONFIG ---
         const firebaseConfig = {
-            apiKey: "AIzaSyDPNoWHEktWMcxHTnxpGrbtzYz4wEf2EHo",
-            authDomain: "bitacora-agente.firebaseapp.com",
-            projectId: "bitacora-agente",
-            storageBucket: "bitacora-agente.firebasestorage.app",
-            messagingSenderId: "322544925589",
-            appId: "1:322544925589:web:25021c345574e9ee0c149c"
-        };
+                apiKey: "AIzaSyCnhYA0Jq-1_b6nqQVx3BN47WXgg2YEDxs",
+                authDomain: "pecvs-testnet.firebaseapp.com",
+                projectId: "pecvs-testnet",
+                storageBucket: "pecvs-testnet.firebasestorage.app",
+                messagingSenderId: "76206458151",
+                appId: "1:76206458151:web:464559030e00d060c11502"
+            };
 
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -1289,7 +1347,7 @@
                         const newSW = reg.installing;
                         newSW.onstatechange = () => {
                             if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                                if (confirm('Nueva versión disponible (v1.3.6). ¿Recargar ahora para actualizar?')) {
+                                if (confirm('Nueva versión disponible (v1.3.7). ¿Recargar ahora para actualizar?')) {
                                     window.location.reload();
                                 }
                             }
@@ -1309,6 +1367,7 @@
                 state.teamCode = data.teamCode || '';
                 state.promotorCode = data.promotorCode || '';
                 state.reportes = data.reportes || [];
+                state.reclutamiento = data.reclutamiento || [];
                 document.getElementById('team-display').textContent = 'Equipo: ' + (state.teamCode || 'Sin Código');
                 startListeningAgents();
             } else {
@@ -1325,8 +1384,9 @@
                     coachName: state.coachName,
                     teamCode: state.teamCode,
                     promotorCode: state.promotorCode,
-                    reportes: state.reportes
-                });
+                    reportes: state.reportes,
+                    reclutamiento: state.reclutamiento
+                }, { merge: true });
                 document.getElementById('team-display').textContent = 'Equipo: ' + (state.teamCode || 'Sin Código');
             } catch (err) { console.error("Error saving coach:", err); }
         }
@@ -1383,6 +1443,7 @@
             renderKPIs();
             refreshMonthFilters();
             renderReporteHistory();
+            loadReclutamiento();
         }
 
         // ─── TABS ─────────────────────────────────────────────────────────────────────
@@ -1595,7 +1656,33 @@
             });
             COLS.forEach(c => { document.getElementById('tt-' + c).textContent = totals[c]; });
             document.getElementById('tt-$').textContent = '$' + totals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // Update month totals
+            updateMonthTotals();
+
             if (autoSave) saveEntry(true);
+        }
+
+        function updateMonthTotals() {
+            const agent = document.getElementById('sel-agent').value;
+            const mes = getMesStr();
+            const monthTotals = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
+
+            if (agent && mes && state.entries) {
+                const agentEntries = state.entries.filter(e => e.agent === agent && e.mes === mes);
+                agentEntries.forEach(entry => {
+                    entry.dias.forEach(d => {
+                        const { ok } = validateDay(d);
+                        if (ok) {
+                            COLS.forEach(c => monthTotals[c] += d[c]);
+                            monthTotals.prima += d.prima;
+                        }
+                    });
+                });
+            }
+
+            COLS.forEach(c => { document.getElementById('ttm-' + c).textContent = monthTotals[c]; });
+            document.getElementById('ttm-$').textContent = '$' + monthTotals.prima.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function clearForm(autoSave = true) {
@@ -1655,22 +1742,38 @@
                 const pi = document.querySelector(`input[data-day="${d.dia}"][data-col="prima"]`); if (pi) pi.value = d.prima;
             });
             updateTotals(false);
+            renderHistory();
         }
 
         // ─── HISTORY ──────────────────────────────────────────────────────────────────
         function renderHistory() {
             const grid = document.getElementById('history-grid');
+            const selectedAgent = document.getElementById('sel-agent').value;
+
             if (!state.entries.length) {
                 grid.innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i>No hay entradas aún. Llena y guarda la bitácora arriba.</div>';
                 return;
             }
-            grid.innerHTML = state.entries.map((e, i) => `
-    <div class="history-chip" onclick="loadEntryIntoForm(${i})">
+
+            const filtered = selectedAgent
+                ? state.entries.filter(e => e.agent === selectedAgent)
+                : state.entries;
+
+            if (!filtered.length) {
+                grid.innerHTML = '<div class="empty-state"><i class="fa fa-inbox"></i>No hay entradas para este agente.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map((e, i) => {
+                const originalIdx = state.entries.indexOf(state.entries.find(x => x.agent === e.agent && x.mes === e.mes && x.semana === e.semana));
+                return `
+    <div class="history-chip" onclick="loadEntryIntoForm(${originalIdx})">
       <span style="font-weight:700;color:var(--gold)">${e.agent}</span>
       <span style="color:var(--slate)">${e.mes} · Sem ${e.semana}</span>
       <span style="color:var(--teal);font-size:11px;">P:${e.totales.P} E:${e.totales.E} V:${e.totales.V}</span>
-      <button class="del-entry" onclick="deleteEntry(event,${i})" title="Eliminar"><i class="fa fa-xmark"></i></button>
-    </div>`).join('');
+      <button class="del-entry" onclick="deleteEntry(event,${originalIdx})" title="Eliminar"><i class="fa fa-xmark"></i></button>
+    </div>`;
+            }).join('');
         }
 
         function loadEntryIntoForm(i) {
@@ -1705,13 +1808,96 @@
 
         // ─── MONTH FILTERS ────────────────────────────────────────────────────────────
         function refreshMonthFilters() {
-            const meses = [...new Set(state.entries.map(e => e.mes))];
-            const opts = meses.map(m => `<option value="${m}">${m}</option>`).join('');
-            ['lb-mes-filter', 'chart-mes-sel', 'kpi-mes-sel'].forEach(id => {
-                const el = document.getElementById(id); const cur = el.value;
-                el.innerHTML = (id === 'lb-mes-filter' ? '<option value="">Todos los meses</option>' : '<option value="">Todos los meses</option>') + opts;
-                if (meses.includes(cur)) el.value = cur;
+            const mesesConDatos = [...new Set(state.entries.map(e => e.mes))];
+
+            // Extraer años únicos de los datos existentes
+            const yearsWithData = [...new Set(mesesConDatos.map(m => {
+                const parts = m.split(' ');
+                return parseInt(parts[parts.length - 1]);
+            }))].sort((a, b) => b - a);
+
+            // Usar año actual si no hay datos, o los años que tienen datos
+            const yearsToShow = yearsWithData.length > 0 ? yearsWithData : [new Date().getFullYear()];
+
+            // Crear opciones de meses para cada año
+            let todosLosMeses = '';
+            yearsToShow.forEach(year => {
+                MONTHS_ES.forEach(m => {
+                    const fullMesStr = m + ' ' + year;
+                    todosLosMeses += `<option value="${fullMesStr}">${m} ${year}</option>`;
+                });
             });
+
+            const lbFilter = document.getElementById('lb-mes-filter');
+            const curLb = lbFilter.value;
+            lbFilter.innerHTML = '<option value="">Todos los meses</option>' + todosLosMeses;
+            if (mesesConDatos.includes(curLb) || curLb === '') lbFilter.value = curLb;
+
+            // Set default leaderboard to last month and last week
+            initLeaderboardDefaults();
+            initBitacoraDefaults();
+        }
+
+        function initLeaderboardDefaults() {
+            if (state.entries.length === 0) return;
+
+            // Find last month by sorting chronologically by year and month
+            const mesesConDatos = [...new Set(state.entries.map(e => e.mes.trim()))];
+            const lastMes = mesesConDatos.sort((a, b) => {
+                const partsA = a.split(' ').filter(p => p.length > 0);
+                const partsB = b.split(' ').filter(p => p.length > 0);
+                const mesA = partsA[0];
+                const yearA = parseInt(partsA[partsA.length - 1]);
+                const mesB = partsB[0];
+                const yearB = parseInt(partsB[partsB.length - 1]);
+                const monthA = MONTHS_ES.indexOf(mesA) + 1;
+                const monthB = MONTHS_ES.indexOf(mesB) + 1;
+                const yA = yearA || 0;
+                const yB = yearB || 0;
+                if (yA !== yB) return yA - yB;
+                return monthA - monthB;
+            }).reverse()[0];
+
+            const lbFilter = document.getElementById('lb-mes-filter');
+            lbFilter.value = lastMes;
+
+            // Force refresh of weeks after setting the month
+            refreshLeaderboardWeeks();
+
+            // Find last week in that month
+            const entriesLastMes = state.entries.filter(e => e.mes.trim() === lastMes);
+            if (entriesLastMes.length > 0) {
+                const lastWeek = Math.max(...entriesLastMes.map(e => parseInt(e.semana)));
+                document.getElementById('lb-sem-filter').value = lastWeek;
+            }
+        }
+
+        function initBitacoraDefaults() {
+            if (state.entries.length === 0) return;
+
+            // Find last month by sorting by year and month
+            const mesesConDatos = [...new Set(state.entries.map(e => e.mes))];
+            const lastMes = mesesConDatos.sort((a, b) => {
+                const [mesA, yearA] = a.split(' ');
+                const [mesB, yearB] = b.split(' ');
+                const monthA = MONTHS_ES.indexOf(mesA) + 1;
+                const monthB = MONTHS_ES.indexOf(mesB) + 1;
+                const yA = parseInt(yearA);
+                const yB = parseInt(yearB);
+                if (yA !== yB) return yA - yB;
+                return monthA - monthB;
+            }).reverse()[0];
+
+            const [mesName, year] = lastMes.split(' ');
+            const monthIdx = MONTHS_ES.indexOf(mesName) + 1;
+            document.getElementById('sel-month').value = monthIdx;
+            updateBitacoraCalendar();
+
+            // Find last week in that month
+            const entriesLastMes = state.entries.filter(e => e.mes === lastMes);
+            const lastWeek = Math.max(...entriesLastMes.map(e => parseInt(e.semana)));
+            document.getElementById('sel-semana').value = lastWeek;
+            updateWeekTable();
         }
 
         // ─── LEADERBOARD ──────────────────────────────────────────────────────────────
@@ -1740,6 +1926,53 @@
             }
             if (d.S > 0 && d.prima < 1) errors.push("Debe ingresar Prima ($) si hay solicitudes");
             return { ok: errors.length === 0, errors };
+        }
+
+        function refreshLeaderboardWeeks() {
+            const mesFilter = document.getElementById('lb-mes-filter');
+            const semFilter = document.getElementById('lb-sem-filter');
+            if (!mesFilter || !semFilter) {
+                console.log('[refreshLeaderboardWeeks] Filters not found');
+                return;
+            }
+            const selectedMes = mesFilter.value || '';
+            const prevSem = semFilter.value;
+
+            // Determinar el número de semanas a mostrar
+            let numWeeks = 6; // Por defecto 6 para cubrir el caso sin mes seleccionado
+
+            if (selectedMes) {
+                // Parsear "Enero 2026" - el año es lo último, el mes es todo antes
+                const trimmed = selectedMes.trim();
+                const lastSpace = trimmed.lastIndexOf(' ');
+                if (lastSpace !== -1) {
+                    const mesName = trimmed.substring(0, lastSpace).trim();
+                    const yearStr = trimmed.substring(lastSpace + 1).trim();
+                    const year = parseInt(yearStr);
+                    const monthIndex = MONTHS_ES.indexOf(mesName);
+
+                    console.log('[refreshLeaderboardWeeks] selectedMes:', selectedMes, '| mesName:', mesName, '| year:', year, '| monthIndex:', monthIndex);
+
+                    if (monthIndex !== -1 && !isNaN(year)) {
+                        const month = monthIndex + 1;
+                        const weeks = getMonthCalendar(year, month);
+                        numWeeks = weeks.length;
+                        console.log('[refreshLeaderboardWeeks] ' + mesName + ' ' + year + ' tiene ' + numWeeks + ' semanas');
+                    }
+                }
+            }
+
+            // Construir opciones
+            let html = '<option value="">Todas las semanas</option>';
+            for (let i = 1; i <= numWeeks; i++) {
+                html += '<option value="' + i + '">Semana ' + i + '</option>';
+            }
+            semFilter.innerHTML = html;
+
+            // Restaurar valor previo si es válido
+            if (prevSem && parseInt(prevSem) <= numWeeks) {
+                semFilter.value = prevSem;
+            }
         }
 
         function renderLeaderboard() {
@@ -1865,15 +2098,65 @@
 
         function renderCharts() {
             const agSel = document.getElementById('chart-agent-sel').value;
-            const mesSel = document.getElementById('chart-mes-sel').value;
+            const period = document.getElementById('chart-period-sel').value;
+            let entries = [];
 
-            let entries = state.entries.filter(e =>
-                (agSel === '__all__' || e.agent === agSel) &&
-                (!mesSel || e.mes === mesSel)
-            );
+            // Find the latest month in the data
+            let latestDate = null;
+            state.entries.forEach(e => {
+                const [mes, year] = e.mes.split(' ');
+                const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                if (!latestDate || entryDate > latestDate) {
+                    latestDate = entryDate;
+                }
+            });
 
-            // Build x-axis labels: unique "mes · SemN" sorted
-            const labelSet = [...new Set(entries.map(e => `${e.mes}·S${e.semana}`))].sort();
+            let filtered = state.entries;
+            if (latestDate) {
+                if (period === '12m') {
+                    const last12Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 11, 1);
+                    filtered = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last12Months;
+                    });
+                } else if (period === '3m') {
+                    const last3Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 2, 1);
+                    filtered = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last3Months;
+                    });
+                } else if (period === '6m') {
+                    const last6Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 5, 1);
+                    filtered = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last6Months;
+                    });
+                }
+            }
+
+            entries = filtered.filter(e => agSel === '__all__' || e.agent === agSel);
+
+            // Build x-axis labels: unique "mes · SemN" sorted by date
+            const labelSet = [...new Set(entries.map(e => `${e.mes}·S${e.semana}`))].sort((a, b) => {
+                const [mesA, semA] = a.split('·');
+                const [mesB, semB] = b.split('·');
+                const [mA, yA] = mesA.split(' ');
+                const [mB, yB] = mesB.split(' ');
+                const monthA = MONTHS_ES.indexOf(mA) + 1;
+                const monthB = MONTHS_ES.indexOf(mB) + 1;
+                const yearA = parseInt(yA);
+                const yearB = parseInt(yB);
+                if (yearA !== yearB) return yearA - yearB;
+                if (monthA !== monthB) return monthA - monthB;
+                return parseInt(semA.replace('S', '')) - parseInt(semB.replace('S', ''));
+            });
             const labels = labelSet.map(l => l.replace('·', ' · Sem '));
 
             // Aggregate per label (re-summing only valid days)
@@ -1979,8 +2262,59 @@
 
         // ─── KPI CHARTS ──────────────────────────────────────────────────────────────
         function renderKPIs() {
-            const mesSel = document.getElementById('kpi-mes-sel').value;
-            let entries = state.entries.filter(e => !mesSel || e.mes === mesSel);
+            const period = document.getElementById('kpi-period-sel').value;
+            let entries = [];
+
+            // Find the latest month in the data
+            let latestDate = null;
+            state.entries.forEach(e => {
+                const [mes, year] = e.mes.split(' ');
+                const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                if (!latestDate || entryDate > latestDate) {
+                    latestDate = entryDate;
+                }
+            });
+
+            if (!latestDate) {
+                entries = state.entries;
+            } else {
+                if (period === '1m') {
+                    const last1Month = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last1Month;
+                    });
+                } else if (period === '3m') {
+                    const last3Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 2, 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last3Months;
+                    });
+                } else if (period === '6m') {
+                    const last6Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 5, 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last6Months;
+                    });
+                } else if (period === '12m') {
+                    const last12Months = new Date(latestDate.getFullYear(), latestDate.getMonth() - 11, 1);
+                    entries = state.entries.filter(e => {
+                        const [mes, year] = e.mes.split(' ');
+                        const monthIdx = MONTHS_ES.indexOf(mes) + 1;
+                        const entryDate = new Date(parseInt(year), monthIdx - 1, 1);
+                        return entryDate >= last12Months;
+                    });
+                } else {
+                    entries = state.entries;
+                }
+            }
 
             const agMap = {};
             entries.forEach(e => {
@@ -2179,7 +2513,7 @@
             reader.readAsText(file);
         }
 
-        // ─── REPORTE MENSUAL ──────────────────────────────────────────────────────────
+        // ─── REPORTE VENTAS ──────────────────────────────────────────────────────────
         function tryLoadReporte() {
             const mesStr = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
             const r = (state.reportes || []).find(r => r.mes === mesStr);
@@ -2187,36 +2521,99 @@
             document.getElementById('rpt-agentes').value = r ? (r.agentes || '') : '';
             document.getElementById('rpt-compromisos').value = r ? (r.compromisos || '') : '';
             document.getElementById('rpt-notas').value = r ? (r.notas || '') : '';
+
+            // Cargar reclutamiento
+            const recl = (state.reclutamiento || []).find(e => e.mes === mesStr);
+            const btnSi = document.getElementById('btn-reclutamiento-si');
+            const btnNo = document.getElementById('btn-reclutamiento-no');
+            if (recl) {
+                handleReclutamientoQ1(recl.q1);
+                if (recl.q1 === 'si') {
+                    document.getElementById('reclutamiento-cantidad').value = recl.q2 || '';
+                    document.getElementById('reclutamiento-nombres').value = recl.q3 || '';
+                    document.getElementById('reclutamiento-compromiso').value = recl.q4 || '';
+                }
+            } else {
+                handleReclutamientoQ1(null);
+                document.getElementById('reclutamiento-cantidad').value = '';
+                document.getElementById('reclutamiento-nombres').value = '';
+                document.getElementById('reclutamiento-compromiso').value = '';
+            }
         }
 
         async function saveReporte() {
-            const mes = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
+            // Validar campos requeridos
+            const mesVal = document.getElementById('rpt-mes').value;
+            const yearVal = document.getElementById('rpt-year').value;
+            const analisis = document.getElementById('rpt-analisis').value.trim();
+            const fraude = document.getElementById('rpt-agentes').value.trim();
+            const compromisos = document.getElementById('rpt-compromisos').value.trim();
+
+            // Validar reclutamiento
+            const btnSi = document.getElementById('btn-reclutamiento-si');
+            const btnNo = document.getElementById('btn-reclutamiento-no');
+            const reclutamientoQ1 = btnSi.style.opacity === '0.5' ? 'si' : (btnNo.style.opacity === '0.5' ? 'no' : null);
+            const reclutamientoQ2 = document.getElementById('reclutamiento-cantidad').value.trim();
+            const reclutamientoQ3 = document.getElementById('reclutamiento-nombres').value.trim();
+            const reclutamientoQ4 = document.getElementById('reclutamiento-compromiso').value.trim();
+
+            // Validaciones
+            if (!mesVal) { alert('Selecciona el mes del reporte'); return; }
+            if (!yearVal) { alert('Ingresa el año del reporte'); return; }
+            if (!analisis) { alert('Completa el análisis general del mes'); return; }
+            if (!fraude) { alert('Completa la sospecha de fraude en actividad'); return; }
+            if (!compromisos) { alert('Completa los compromisos del coach'); return; }
+            if (reclutamientoQ1 === null) { alert('Responde la primera pregunta de reclutamiento'); return; }
+            if (reclutamientoQ1 === 'si' && !reclutamientoQ2) { alert('Indica cuántos prospectos tienes a tu cargo'); return; }
+            if (reclutamientoQ1 === 'si' && !reclutamientoQ3) { alert('Escribe los nombres de los prospectos'); return; }
+            if (reclutamientoQ1 === 'si' && !reclutamientoQ4) { alert('Describe tu compromiso de formalización'); return; }
+
+            const mes = mesVal + ' ' + yearVal;
             const rpt = {
                 mes,
-                analisis: document.getElementById('rpt-analisis').value,
-                agentes: document.getElementById('rpt-agentes').value,
-                compromisos: document.getElementById('rpt-compromisos').value,
+                analisis,
+                agentes: fraude,
+                compromisos,
                 notas: document.getElementById('rpt-notas').value,
                 fecha: new Date().toISOString()
             };
+
+            // Guardar reporte de ventas
             if (!state.reportes) state.reportes = [];
             const idx = state.reportes.findIndex(r => r.mes === mes);
             if (idx >= 0) state.reportes[idx] = rpt; else state.reportes.push(rpt);
 
-            await saveState(); // This calls saveCoachData which includes reportes
+            // Guardar reclutamiento
+            const reclutamiento = {
+                fecha: new Date().toISOString(),
+                mes,
+                q1: reclutamientoQ1,
+                q2: reclutamientoQ1 === 'si' ? reclutamientoQ2 : '',
+                q3: reclutamientoQ1 === 'si' ? reclutamientoQ3 : '',
+                q4: reclutamientoQ1 === 'si' ? reclutamientoQ4 : ''
+            };
+            if (!state.reclutamiento) state.reclutamiento = [];
+            const reclIdx = state.reclutamiento.findIndex(e => e.mes === mes);
+            if (reclIdx >= 0) state.reclutamiento[reclIdx] = reclutamiento; else state.reclutamiento.push(reclutamiento);
+
+            await saveCoachData();
             renderReporteHistory();
+            loadReclutamiento();
+
             const msg = document.getElementById('rpt-msg');
-            msg.style.display = 'inline-flex'; setTimeout(() => msg.style.display = 'none', 2500);
+            msg.style.display = 'inline-flex';
+            setTimeout(() => msg.style.display = 'none', 2500);
         }
 
-        function deleteReporte() {
-            const mes = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
-            if (!confirm('¿Eliminar el reporte de ' + mes + '?')) return;
-            state.reportes = (state.reportes || []).filter(r => r.mes !== mes);
-            saveState();
-            renderReporteHistory();
-            ['rpt-analisis', 'rpt-agentes', 'rpt-compromisos', 'rpt-notas'].forEach(id => document.getElementById(id).value = '');
-        }
+        // Deleted report deletion functionality per user request: "Que no puedan eliminar ningun reporte"
+        // function deleteReporte() {
+        //     const mes = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
+        //     if (!confirm('¿Eliminar el reporte de ' + mes + '?')) return;
+        //     state.reportes = (state.reportes || []).filter(r => r.mes !== mes);
+        //     saveState();
+        //     renderReporteHistory();
+        //     ['rpt-analisis', 'rpt-agentes', 'rpt-compromisos', 'rpt-notas'].forEach(id => document.getElementById(id).value = '');
+        // }
 
         function loadReporte(mesStr) {
             const r = (state.reportes || []).find(r => r.mes === mesStr);
@@ -2246,6 +2643,119 @@
     </div>`).join('');
         }
 
+        // ─── RECLUTAMIENTO ─────────────────────────────────────────────────────────────
+        function handleReclutamientoQ1(respuesta) {
+            const q2Div = document.getElementById('reclutamiento-q2');
+            const q3Div = document.getElementById('reclutamiento-q3');
+            const q4Div = document.getElementById('reclutamiento-q4');
+            const cantidad = document.getElementById('reclutamiento-cantidad');
+            const nombres = document.getElementById('reclutamiento-nombres');
+            const compromiso = document.getElementById('reclutamiento-compromiso');
+            const btnSi = document.getElementById('btn-reclutamiento-si');
+            const btnNo = document.getElementById('btn-reclutamiento-no');
+
+            // Reset button opacity
+            btnSi.style.opacity = '1';
+            btnNo.style.opacity = '1';
+
+            if (respuesta === 'si') {
+                btnSi.style.opacity = '0.5';
+                q2Div.style.display = 'block';
+                q3Div.style.display = 'block';
+                q4Div.style.display = 'block';
+                cantidad.focus();
+            } else if (respuesta === 'no') {
+                btnNo.style.opacity = '0.5';
+                q2Div.style.display = 'none';
+                q3Div.style.display = 'none';
+                q4Div.style.display = 'none';
+                cantidad.value = '';
+                nombres.value = '';
+                compromiso.value = '';
+            }
+            // If respuesta is null/undefined, both buttons stay at opacity 1 (unpressed)
+        }
+
+        async function saveReclutamiento(q1_respuesta, q2_respuesta) {
+            // Determine Q1 response from buttons if not provided
+            if (!q1_respuesta) {
+                const btnSi = document.getElementById('btn-reclutamiento-si');
+                const btnNo = document.getElementById('btn-reclutamiento-no');
+                q1_respuesta = btnSi.style.opacity === '0.5' ? 'si' : 'no';
+            }
+
+            // Get Q2 response from textarea
+            if (q2_respuesta === undefined) {
+                q2_respuesta = document.getElementById('reclutamiento-compromiso').value;
+            }
+
+            // Validate
+            if (q1_respuesta === 'si' && !q2_respuesta.trim()) {
+                alert('Por favor ingresa tu compromiso');
+                return;
+            }
+
+            const mesActual = document.getElementById('rpt-mes').value + ' ' + document.getElementById('rpt-year').value;
+
+            const entrada = {
+                fecha: new Date().toISOString(),
+                mes: mesActual,
+                q1: q1_respuesta,
+                q2: q2_respuesta
+            };
+
+            if (!state.reclutamiento) state.reclutamiento = [];
+
+            // Verificar si ya existe respuesta para este mes
+            const idxExistente = state.reclutamiento.findIndex(e => e.mes === mesActual);
+            if (idxExistente >= 0) {
+                // Actualizar la existente
+                state.reclutamiento[idxExistente] = entrada;
+            } else {
+                // Agregar nueva
+                state.reclutamiento.push(entrada);
+            }
+
+            await saveCoachData();
+            loadReclutamiento();
+
+            // Reset form
+            document.getElementById('reclutamiento-q2').style.display = 'none';
+            document.getElementById('reclutamiento-compromiso').value = '';
+            document.getElementById('btn-reclutamiento-si').style.opacity = '1';
+            document.getElementById('btn-reclutamiento-no').style.opacity = '1';
+        }
+
+        function loadReclutamiento() {
+            const historialDiv = document.getElementById('reclutamiento-lista');
+            const entries = (state.reclutamiento || []).slice().reverse();
+
+            if (!entries.length) {
+                historialDiv.innerHTML = '<div style="color:var(--slate);font-size:12px;">Sin respuestas aún.</div>';
+                return;
+            }
+
+            historialDiv.innerHTML = entries.map(e => {
+                const fecha = new Date(e.fecha).toLocaleDateString('es-MX');
+                let respuesta = '';
+                if (e.q1 === 'si') {
+                    respuesta = `Sí - ${e.q2 || '0'} prospectos`;
+                    if (e.q3) respuesta += ` (${e.q3})`;
+                    respuesta += ` - Compromiso: ${e.q4 || ''}`;
+                } else {
+                    respuesta = 'Todavía no';
+                }
+                return `<div style="padding:8px; border-left:3px solid var(--gold); margin-bottom:8px;">
+                    <div style="font-weight:600;">${e.mes} (${fecha})</div>
+                    <div style="color:var(--slate); font-size:11px;">${respuesta}</div>
+                </div>`;
+            }).join('');
+        }
+
+        window.handleReclutamientoQ1 = handleReclutamientoQ1;
+        window.saveReclutamiento = saveReclutamiento;
+        window.loadReclutamiento = loadReclutamiento;
+
         // ─── BOOT ─────────────────────────────────────────────────────────────────────
         window.addEventListener('beforeunload', function (e) {
             if (state.entries && state.entries.length > 0) {
@@ -2272,9 +2782,12 @@
         window.importJSON = importJSON;
         window.tryLoadReporte = tryLoadReporte;
         window.saveReporte = saveReporte;
-        window.deleteReporte = deleteReporte;
         window.loadReporte = loadReporte;
         window.renderReporteHistory = renderReporteHistory;
+        window.refreshLeaderboardWeeks = refreshLeaderboardWeeks;
+        window.refreshMonthFilters = refreshMonthFilters;
+        window.initLeaderboardDefaults = initLeaderboardDefaults;
+        window.initBitacoraDefaults = initBitacoraDefaults;
         window.addAgent = addAgent;
         window.removeAgent = removeAgent;
         window.validateDay = validateDay;
