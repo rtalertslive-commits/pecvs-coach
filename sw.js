@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pecvs-coach-mainnet-v1.6.5';
+const CACHE_NAME = 'pecvs-coach-mainnet-v1.6.6';
 const assets = [
     './',
     './index.html',
