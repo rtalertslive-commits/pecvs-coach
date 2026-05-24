@@ -11,6 +11,8 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- PWA manifest + icon (gold radial bg + serif "C") -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#d4af37">
     <link rel="apple-touch-icon" href="icon.svg">
@@ -105,41 +107,119 @@
             gap: 24px;
         }
 
-        /* HEADER — column en mobile, row en desktop (mismo patrón que agente) */
+        /* HEADER — sticky con backdrop blur + bleed lateral. Mismo patrón que agente. */
         .header {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
+            gap: 10px;
+            padding: 12px 14px;
+            /* bleed lateral hacia los bordes del body para que el sticky cubra el viewport. */
+            margin: -30px -20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(2, 6, 23, 0.92);
+            backdrop-filter: blur(14px) saturate(140%);
+            -webkit-backdrop-filter: blur(14px) saturate(140%);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
         }
+
+        /* Filas del header */
+        .header .row-brand,
+        .header .row-info,
+        .header .row-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .row-brand { justify-content: space-between; }
+        .header .row-info { flex-wrap: wrap; }
+        .header .row-menu { gap: 8px; }
+        .header .row-menu .btn { flex: 1; }
+
         @media (min-width: 768px) {
             .header {
                 flex-direction: row;
-                justify-content: space-between;
+                flex-wrap: wrap;
                 align-items: center;
+                padding: 12px 24px;
+                gap: 14px;
+                margin: -30px -20px 0;
             }
+            .header .row-brand { flex: 0 0 auto; }
+            .header .row-info  { flex: 1 1 auto; justify-content: center; }
+            .header .row-menu  { flex: 0 0 auto; margin-left: auto; }
+            .header .row-menu .btn { flex: 0 0 auto; }
         }
 
-        /* BRAND: monograma dorado + wordmark "Actividad" + subtitle pulse */
+        /* Karma badge compacto cuando vive en el header */
+        .header #karma-badge {
+            padding: 4px 10px 4px 8px;
+            margin-top: 0;
+            border-radius: 18px;
+        }
+        .header #karma-badge .star { font-size: 14px; }
+        .header #karma-badge .karma-num { font-size: 14px; letter-spacing: 0.5px; }
+        .header #karma-badge .karma-lbl { font-size: 9px; letter-spacing: 1.2px; }
+
+        /* Brand block: monograma + título + version tag */
+        .brand-block { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-title {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            min-width: 0;
+        }
+        .brand-title h1 {
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            background: none;
+            -webkit-text-fill-color: #fff;
+            margin: 0;
+        }
+        .version-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.10);
+            border: 1px solid rgba(212, 175, 55, 0.30);
+            padding: 2px 7px;
+            border-radius: 5px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        /* Icon buttons group (bell + bullhorn) */
+        .icon-btns {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        /* BRAND: monograma dorado (compacto 36×36) */
         .brand {
             display: flex;
             align-items: center;
             gap: 14px;
         }
         .brand-mono {
-            width: 48px;
-            height: 48px;
-            border-radius: 11px;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
             background: linear-gradient(135deg, var(--gold-l) 0%, var(--gold) 50%, #a08015 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Playfair Display', serif;
             font-weight: 900;
-            font-size: 26px;
+            font-size: 20px;
             color: var(--bg);
-            box-shadow: 0 4px 14px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+            box-shadow: 0 3px 10px rgba(212, 175, 55, 0.25), inset 0 1px 0 rgba(255,255,255,0.2);
             flex-shrink: 0;
             line-height: 1;
         }
@@ -189,7 +269,7 @@
             color: var(--slate);
         }
 
-        /* KARMA BADGE — con glow pulsante (igual al agente) */
+        /* KARMA BADGE — preservado por si se reusa en algún otro panel (header ya no la incluye) */
         @keyframes karmaPulse {
             0%,100% { box-shadow: 0 0 8px rgba(212,175,55,0.3); }
             50%      { box-shadow: 0 0 20px rgba(212,175,55,0.8), 0 0 40px rgba(212,175,55,0.3); }
@@ -222,12 +302,85 @@
             letter-spacing: 2px;
         }
 
-        .header-right {
-            display: flex;
-            gap: 10px;
+        /* Bell + Megaphone — circulares, icon-only, visualmente distintos del menu de user */
+        #notif-bell-btn,
+        #anuncios-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border-radius: 50%;
+            flex-shrink: 0;
+            position: relative;
+            display: inline-flex;
             align-items: center;
-            flex-wrap: wrap;
+            justify-content: center;  /* fix: ícono centrado dentro del círculo */
         }
+        #notif-bell-btn i,
+        #anuncios-btn i {
+            font-size: 15px;
+            margin: 0;
+        }
+        /* Override btn sizing en el header row-menu para igualar al agente
+           (el .btn-sm global del coach es más chico que el del agente) */
+        .header .row-menu .btn,
+        .header .row-menu .btn-sm {
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+            gap: 7px;
+            justify-content: center;
+        }
+        /* Badge numérico para anuncios sin leer (rojo, esquina superior derecha) */
+        #anuncios-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            background: #ef4444;
+            color: #fff;
+            border-radius: 9px;
+            font-size: 10px;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--panel, #0f172a);
+            line-height: 1;
+        }
+        #anuncios-badge.show { display: flex; }
+
+        /* Push banner — fixed top, displays cuando el browser necesita permiso */
+        #push-banner.show { display:flex !important; }
+
+        /* In-app toast (foreground FCM message) */
+        .in-app-toast {
+            position:fixed; top:20px; left:50%; transform:translate(-50%,-100px);
+            min-width:280px; max-width:90vw;
+            background:linear-gradient(135deg,#1e293b,#0f172a);
+            border:1px solid rgba(212,175,55,0.4);
+            border-radius:12px; padding:14px 18px;
+            box-shadow:0 8px 32px rgba(0,0,0,0.5);
+            z-index:10005;
+            transition:transform 0.3s ease-out;
+        }
+        .in-app-toast.show { transform:translate(-50%,0); }
+        .in-app-toast .toast-title { color:var(--gold,#d4af37); font-weight:800; font-size:15px; margin-bottom:3px; }
+        .in-app-toast .toast-body { color:#fff; font-size:13px; line-height:1.4; }
+
+        @keyframes bellPulseGold {
+            0%   { box-shadow: 0 0 0 0 rgba(212,175,55,0.7); transform: scale(1); }
+            50%  { box-shadow: 0 0 0 10px rgba(212,175,55,0); transform: scale(1.06); }
+            100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); transform: scale(1); }
+        }
+        #notif-bell-btn.bell-pulsing {
+            animation: bellPulseGold 1.6s ease-in-out infinite;
+            background: rgba(212,175,55,0.18) !important;
+            border-color: var(--gold,#d4af37) !important;
+            color: var(--gold,#d4af37) !important;
+        }
+        #notif-bell-btn.bell-pulsing i { color: var(--gold,#d4af37); }
 
         /* BUTTONS */
         .btn {
@@ -355,6 +508,24 @@
         }
         .bottom-nav .bn-btn.active { color: var(--gold); }
         .bottom-nav .bn-btn.active i { transform: scale(1.12); }
+        .bottom-nav .bn-btn { position: relative; }
+        .bn-badge {
+            position: absolute;
+            top: 4px;
+            right: 18%;
+            background: #f59e0b;
+            color: #0f172a;
+            font-size: 10px;
+            font-weight: 800;
+            min-width: 16px;
+            height: 16px;
+            border-radius: 999px;
+            padding: 0 5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
 
         /* ═══ MOBILE LEADERBOARD ═══ */
         .lb-mobile { display: none; }
@@ -438,94 +609,6 @@
             border-top: none; padding-top: 4px;
         }
         .lb-team-total-sub strong { color: var(--white); font-weight: 700; }
-
-        /* ═══ Info icon (i) para metricas del Equipo Total ═══ */
-        .info-i-btn {
-            background: rgba(212,175,55,0.10);
-            border: 1px solid rgba(212,175,55,0.25);
-            color: var(--gold);
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 9px;
-            cursor: pointer;
-            margin-left: 4px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            font-family: inherit;
-            vertical-align: middle;
-            transition: background .15s, transform .1s;
-        }
-        .info-i-btn:hover {
-            background: rgba(212,175,55,0.22);
-            border-color: var(--gold);
-            transform: scale(1.15);
-        }
-        .info-i-btn i { line-height: 1; }
-
-        /* Modal compartido (reusable para cualquier info de metrica) */
-        .info-modal-box {
-            background: var(--panel);
-            border: 1.5px solid var(--gold);
-            border-radius: 14px;
-            padding: 20px;
-            width: 100%;
-            max-width: 380px;
-            max-height: 80vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .info-modal-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(212,175,55,0.2);
-        }
-        .info-modal-title {
-            font-family: 'Playfair Display', serif;
-            color: var(--gold);
-            font-size: 16px;
-            font-weight: 700;
-            flex: 1;
-            line-height: 1.25;
-        }
-        .info-modal-close {
-            background: none;
-            border: none;
-            color: var(--white);
-            font-size: 24px;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0 4px;
-        }
-        .info-modal-body {
-            font-size: 13px;
-            color: var(--white);
-            line-height: 1.5;
-        }
-        .info-modal-body p { margin: 0 0 8px; }
-        .info-modal-body code {
-            background: rgba(212,175,55,0.12);
-            color: var(--gold);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: 'Courier New', monospace;
-        }
-        .info-modal-body .info-label {
-            color: var(--gold);
-            font-weight: 700;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 4px;
-            display: block;
-        }
         .lb-mobile-row {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -599,6 +682,18 @@
             }
             #tab-bitacora .card,
             #tab-reporte .card { display: none; }
+        }
+
+        /* ═══ MOBILE: charts 1-col + padding reducido ═══ */
+        @media (max-width: 767px) {
+            .charts-grid { grid-template-columns: 1fr; gap: 12px; }
+            .card { padding: 14px; }
+            .chart-card { padding: 14px; }
+            .chart-card h3 { margin-bottom: 10px; }
+            .chart-wrap { height: 260px; }
+            .charts-controls { flex-direction: column; gap: 8px; }
+            .charts-controls > div { width: 100%; }
+            .charts-controls select { width: 100%; }
         }
 
         /* CARDS */
@@ -970,7 +1065,6 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
-            min-width: 0;
         }
 
         .chart-card.full {
@@ -990,126 +1084,6 @@
             position: relative;
         }
 
-        /* ─── KPI Charts: scroll horizontal con scrollbar custom siempre visible ─── */
-        .chart-wrap.kpi-scroll {
-            overflow-x: scroll;
-            overflow-y: hidden;
-            width: 100%;
-            min-width: 0;
-            /* Ocultamos la scrollbar nativa — usamos custom abajo (Mac/iOS fade) */
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-        .chart-wrap.kpi-scroll::-webkit-scrollbar {
-            display: none;
-            width: 0;
-            height: 0;
-        }
-        /* Ancho dinamico via --bar-count seteado por JS. Si pocas barras, 100%; si muchas, N*50px. */
-        .kpi-chart-inner {
-            height: 100%;
-            position: relative;
-            width: max(100%, calc(var(--bar-count, 1) * 50px));
-        }
-
-        /* Pills de vista para los KPIs (Top 10 / Top 30 / Todos / Foco 30 / Foco 10) */
-        .kpi-pills {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .kpi-pill {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid var(--border);
-            color: var(--slate);
-            padding: 7px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background .15s ease, color .15s ease, border-color .15s ease;
-            font-family: inherit;
-        }
-        .kpi-pill:hover:not(.active) {
-            background: rgba(255,255,255,0.08);
-            color: var(--white);
-        }
-        .kpi-pill.active {
-            background: rgba(212,175,55,0.15);
-            border-color: var(--gold);
-            color: var(--gold);
-        }
-        .kpi-pill[hidden] { display: none !important; }
-
-        /* ─── KPI HTML Legend (afuera del scroll horizontal) ─── */
-        .kpi-chart-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-        .chart-legend-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 10px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 14px;
-            color: var(--white);
-            font-family: inherit;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .15s, opacity .15s, border-color .15s;
-        }
-        .chart-legend-btn:hover {
-            background: rgba(255,255,255,0.07);
-            border-color: rgba(255,255,255,0.18);
-        }
-        .chart-legend-btn.is-hidden {
-            opacity: 0.42;
-            text-decoration: line-through;
-        }
-        .chart-legend-btn .legend-swatch {
-            width: 10px;
-            height: 10px;
-            border-radius: 3px;
-            display: inline-block;
-            flex-shrink: 0;
-        }
-
-        /* ─── Scrollbar custom SIEMPRE visible (debajo del chart KPI) ─── */
-        .kpi-custom-scrollbar {
-            height: 10px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 5px;
-            margin: 8px 0 2px;
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
-        }
-        .kpi-custom-scroll-thumb {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background: var(--gold);
-            border-radius: 5px;
-            min-width: 28px;
-            cursor: grab;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.15) inset,
-                        0 1px 2px rgba(0,0,0,0.3);
-        }
-        .kpi-custom-scroll-thumb:active {
-            cursor: grabbing;
-            background: var(--gold-l);
-        }
-
         /* ═══ MOBILE: charts 1-col + padding reducido (override del .charts-grid de arriba) ═══ */
         @media (max-width: 767px) {
             .charts-grid { grid-template-columns: 1fr !important; gap: 12px; }
@@ -1120,17 +1094,6 @@
             .charts-controls { flex-direction: column; gap: 8px; }
             .charts-controls > div { width: 100%; }
             .charts-controls select { width: 100%; }
-            /* Pills: scroll horizontal en mobile en vez de wrap */
-            .kpi-pills {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                padding-bottom: 2px;
-            }
-            .kpi-pills::-webkit-scrollbar { display: none; }
-            .kpi-pill { padding: 8px 12px; font-size: 13px; }
-            .chart-legend-btn { font-size: 10px; padding: 4px 9px; }
         }
 
         /* FUNNEL INDICATOR */
@@ -1210,35 +1173,143 @@
             overflow-y: auto;
             position: relative;
         }
-        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 8px; }
-        .cal-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--gold); font-weight: 700; flex: 1; line-height: 1.2; }
-        .cal-close-btn { background: none; border: none; color: var(--white); font-size: 24px; cursor: pointer; line-height: 1; padding: 0 4px; }
-        .cal-nav { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 14px; }
-        .cal-nav-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: var(--white); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-family: inherit; font-size: 14px; }
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+        .cal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            color: var(--gold);
+            font-weight: 700;
+            flex: 1;
+            line-height: 1.2;
+        }
+        .cal-close-btn {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 4px;
+        }
+        .cal-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .cal-nav-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--white);
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+        }
         .cal-nav-btn:hover { background: rgba(255,255,255,0.14); }
-        .cal-nav-mes { font-weight: 700; font-size: 14px; min-width: 140px; text-align: center; color: var(--white); }
-        .cal-grid-head { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
-        .cal-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 12px; }
-        .cal-cell-head { text-align: center; font-size: 10px; font-weight: 700; color: var(--slate); padding: 6px 0; text-transform: uppercase; letter-spacing: 1px; }
-        .cal-cell { aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: transform .1s, box-shadow .15s; position: relative; padding: 2px; border: 1px solid transparent; }
+        .cal-nav-mes {
+            font-weight: 700;
+            font-size: 14px;
+            min-width: 140px;
+            text-align: center;
+            color: var(--white);
+        }
+        .cal-grid-head {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+        .cal-grid-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        .cal-cell-head {
+            text-align: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--slate);
+            padding: 6px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .cal-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .1s, box-shadow .15s;
+            position: relative;
+            padding: 2px;
+            border: 1px solid transparent;
+        }
         .cal-cell.empty { visibility: hidden; }
         .cal-cell.none { background: rgba(255,255,255,0.04); color: var(--slate); }
         .cal-cell.ok { background: rgba(16,185,129,0.18); color: #10b981; border-color: rgba(16,185,129,0.35); }
         .cal-cell.red { background: rgba(239,68,68,0.18); color: #ef4444; border-color: rgba(239,68,68,0.35); }
         .cal-cell.sin-actividad { background: rgba(245,158,11,0.18); color: #f59e0b; border-color: rgba(245,158,11,0.35); }
-        .cal-cell.future { opacity: 0.22; cursor: not-allowed; background: rgba(255,255,255,0.015); color: var(--slate); pointer-events: none; }
+        /* Dias futuros: faded, no clickeables, sin status */
+        .cal-cell.future {
+            opacity: 0.22;
+            cursor: not-allowed;
+            background: rgba(255,255,255,0.015);
+            color: var(--slate);
+            pointer-events: none;
+        }
         .cal-cell.future:hover { transform: none; box-shadow: none; }
         .cal-cell:not(.empty):not(.future):hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
         .cal-cell.selected { box-shadow: 0 0 0 2px var(--gold); }
         .cal-cell .cal-num { font-size: 12px; line-height: 1.1; }
         .cal-cell .cal-icon { font-size: 11px; line-height: 1; }
-        .cal-legend { font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; margin-bottom: 12px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .cal-legend {
+            font-size: 11px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 8px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+        }
         .cal-legend-item { display: flex; align-items: center; gap: 6px; color: var(--white); }
         .cal-legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
-        .cal-day-detail { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 12px; font-size: 12px; min-height: 44px; color: var(--white); }
+        .cal-day-detail {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            min-height: 44px;
+            color: var(--white);
+        }
         .cal-day-detail .cal-detail-empty { color: var(--slate); }
-        .btn-calendar { margin-top: 8px; width: 100%; background: rgba(212,175,55,0.12); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); }
-        .btn-calendar:hover { background: rgba(212,175,55,0.18); border-color: var(--gold); }
+        .btn-calendar {
+            margin-top: 8px;
+            width: 100%;
+            background: rgba(212,175,55,0.12);
+            color: var(--gold);
+            border: 1px solid rgba(212,175,55,0.3);
+        }
+        .btn-calendar:hover {
+            background: rgba(212,175,55,0.18);
+            border-color: var(--gold);
+        }
 
         .modal-box {
             background: var(--panel);
@@ -1248,7 +1319,7 @@
             max-width: 500px;
             width: 90%;
             position: relative;
-            max-height: 90vh;
+            max-height: 86vh;
             overflow-y: auto;
         }
 
@@ -1337,26 +1408,6 @@
             display: inline-block;
             vertical-align: -0.15em;
             flex-shrink: 0;
-        }
-        /* Conceptos: layout 2-cols en desktop, single-col reordenado en mobile.
-           Mobile order: visual funnel → defs → MÉTRICAS DE VOLUMEN Y VALOR → totopos */
-        .conceptos-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-        .conceptos-prima,
-        .conceptos-totopos {
-            grid-column: 1 / -1;  /* full-width en desktop */
-        }
-        @media (max-width: 720px) {
-            .conceptos-grid {
-                grid-template-columns: 1fr;
-            }
-            .conceptos-visual { order: 1; position: static !important; }
-            .conceptos-defs   { order: 2; }
-            .conceptos-prima  { order: 3; }
-            .conceptos-totopos { order: 4; }
         }
 
         /* ═══ BOTÓN INSTALAR APP (PWA) ═══ */
@@ -1516,13 +1567,17 @@
             text-transform: uppercase;
         }
 
-        /* ═══ SUB-TABS Equipo/Pendientes — MOBILE ONLY ═══ */
+        /* ═══ SUB-TABS dentro de pestaña Equipo (Equipo / Pendientes) — MOBILE ONLY ═══ */
         .lb-subtabs { display: none; }
         @media (max-width: 767px) {
             .lb-subtabs {
-                display: flex; gap: 4px; margin-bottom: 14px;
-                background: rgba(255,255,255,0.03); padding: 4px;
-                border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);
+                display: flex;
+                gap: 4px;
+                margin-bottom: 14px;
+                background: rgba(255,255,255,0.03);
+                padding: 4px;
+                border-radius: 10px;
+                border: 1px solid rgba(255,255,255,0.06);
             }
             body.lb-subview-pendientes #tab-leaderboard .lb-filters,
             body.lb-subview-pendientes #tab-leaderboard .lb-mobile,
@@ -1530,27 +1585,47 @@
             body.lb-subview-pendientes #lb-mobile-pendientes-subview { display: block !important; }
         }
         .lb-subtab-btn {
-            flex: 1; background: transparent; border: none; color: var(--slate);
-            font-size: 12px; font-weight: 700; padding: 9px 8px; border-radius: 7px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            gap: 6px; position: relative; transition: background .15s, color .15s; font-family: inherit;
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--slate);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 9px 8px;
+            border-radius: 7px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            position: relative;
+            transition: background .15s, color .15s;
+            font-family: inherit;
         }
-        .lb-subtab-btn:hover:not(.active) { background: rgba(255,255,255,0.04); color: var(--white); }
-        .lb-subtab-btn.active { background: rgba(212,175,55,0.15); color: var(--gold); }
+        .lb-subtab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.04);
+            color: var(--white);
+        }
+        .lb-subtab-btn.active {
+            background: rgba(212,175,55,0.15);
+            color: var(--gold);
+        }
         .lb-subtab-badge {
-            background: #f59e0b; color: #0f172a; font-size: 10px; font-weight: 800;
-            min-width: 18px; height: 18px; border-radius: 999px; padding: 0 6px;
-            display: inline-flex; align-items: center; justify-content: center; line-height: 1;
+            background: #f59e0b;
+            color: #0f172a;
+            font-size: 10px;
+            font-weight: 800;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            padding: 0 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
-        /* Badge contador en bottom nav Equipo */
-        .bottom-nav .bn-btn { position: relative; }
-        .bn-badge {
-            position: absolute; top: 4px; right: 18%;
-            background: #f59e0b; color: #0f172a; font-size: 10px; font-weight: 800;
-            min-width: 16px; height: 16px; border-radius: 999px; padding: 0 5px;
-            display: inline-flex; align-items: center; justify-content: center; line-height: 1;
-        }
-        /* ═══ PENDIENTES cards fantasma ═══ */
+
+        /* ═══ PENDIENTES (cards fantasma sin actividad reciente) ═══ */
         .lb-pendientes-section { margin-top: 0; }
         .lb-pendientes-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -1562,32 +1637,54 @@
             display: flex; align-items: center; gap: 6px;
         }
         .lb-pendientes-title .count {
-            background: rgba(245,158,11,0.15); color: #f59e0b;
-            padding: 2px 8px; border-radius: 999px; font-weight: 800; font-size: 11px;
+            background: rgba(245,158,11,0.15);
+            color: #f59e0b;
+            padding: 2px 8px; border-radius: 999px;
+            font-weight: 800; font-size: 11px;
         }
-        .lb-pendientes-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+        .lb-pendientes-filters {
+            display: flex; gap: 6px; flex-wrap: wrap;
+        }
         .lb-pendientes-filter {
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-            color: var(--white); font-size: 11px; padding: 4px 8px; border-radius: 6px; cursor: pointer;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--white); font-size: 11px;
+            padding: 4px 8px; border-radius: 6px;
+            cursor: pointer;
         }
         .lb-ghost-card {
-            background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.15);
-            border-radius: 10px; padding: 11px 14px; margin-bottom: 8px;
-            display: flex; align-items: center; gap: 12px; opacity: 0.85;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 11px 14px;
+            margin-bottom: 8px;
+            display: flex; align-items: center; gap: 12px;
+            opacity: 0.85;
         }
-        .lb-ghost-card.tier-5 { border-color: rgba(239,68,68,0.4);  background: rgba(239,68,68,0.04); }
+        .lb-ghost-card.tier-5 { border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.04); }
         .lb-ghost-card.tier-4 { border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.04); }
-        .lb-ghost-card.tier-3 { border-color: rgba(251,146,60,0.3);  background: rgba(251,146,60,0.04); }
+        .lb-ghost-card.tier-3 { border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.04); }
         .lb-ghost-card.tier-2 { border-color: rgba(251,191,36,0.25); background: rgba(251,191,36,0.04); }
-        .lb-ghost-card.tier-0 { border-color: rgba(245,158,11,0.3);  background: rgba(245,158,11,0.04); }
-        .lb-ghost-icon { font-size: 22px; flex-shrink: 0; width: 32px; text-align: center; }
+        .lb-ghost-card.tier-0 { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04); }
+        .lb-ghost-icon {
+            font-size: 22px; flex-shrink: 0;
+            width: 32px; text-align: center;
+        }
         .lb-ghost-body { flex: 1; min-width: 0; }
         .lb-ghost-name {
-            font-size: 13px; font-weight: 700; color: var(--white);
+            font-size: 13px; font-weight: 700;
+            color: var(--white);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .lb-ghost-tier-label { font-size: 11px; margin-top: 2px; font-weight: 600; }
-        .lb-ghost-second-line { font-size: 10px; color: var(--slate); margin-top: 2px; }
+        .lb-ghost-tier-label {
+            font-size: 11px;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+        .lb-ghost-second-line {
+            font-size: 10px; color: var(--slate);
+            margin-top: 2px;
+        }
     </style>
 </head>
 
@@ -1655,30 +1752,46 @@
 
         <!-- HEADER -->
         <div class="header">
-            <div class="header-left">
-                <div class="brand">
+            <!-- Row 1: brand (logo + título + versión) + icon buttons (bell, bocina) -->
+            <div class="row-brand">
+                <div class="brand-block">
                     <div class="brand-mono">C</div>
-                    <div>
+                    <div class="brand-title">
                         <h1>Actividad</h1>
-                        <div class="brand-sub"><span class="pulse-text">REGISTRO PROFESIONAL</span> <span class="ver" data-app-version>—</span></div>
+                        <span class="version-tag" data-app-version>—</span>
                     </div>
                 </div>
-                <p id="coach-display">Coach: —</p>
-                <p id="team-display" style="font-size:11px; color:var(--gold); font-weight:700; margin-top:2px;">Equipo: Sin Código</p>
-                <div id="karma-badge">
+                <div class="icon-btns">
+                    <button id="notif-bell-btn" class="btn" onclick="openNotifModal()" title="Notificaciones">
+                        <i class="fa fa-bell"></i>
+                        <span id="notif-bell-dot" style="display:none; position:absolute; top:6px; right:6px; width:9px; height:9px; background:var(--gold); border-radius:50%; border:1.5px solid var(--panel, #0f172a);"></span>
+                    </button>
+                    <button id="anuncios-btn" class="btn" onclick="openAnunciosModal()" title="Anuncios">
+                        <i class="fa fa-bullhorn"></i>
+                        <span id="anuncios-badge">0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 2: karma badge inline (totopos del coach) -->
+            <div class="row-info">
+                <div id="karma-badge" aria-label="Tus totopos">
                     <span class="star"><svg class="totopo-icon"><use href="#totopo"/></svg></span>
                     <span class="karma-num" id="karma-value">0</span>
                     <span class="karma-lbl">totopos</span>
                 </div>
             </div>
-            <div class="header-right">
+
+            <!-- Row 3: user menu (Configuración + Salir) -->
+            <div class="row-menu">
                 <button class="btn btn-sm" onclick="openConfig()"><i class="fa fa-cog"></i> Configuración</button>
-                <button id="logout-btn" class="btn btn-red btn-sm" onclick="logout()"><i class="fa fa-sign-out"></i>
-                    Salir</button>
+                <button id="logout-btn" class="btn btn-sm"
+                    style="border-color:var(--red) !important; color:var(--red) !important;"
+                    onclick="logout()"><i class="fa fa-sign-out"></i> Salir</button>
             </div>
         </div>
 
-        <!-- TAB NAV -->
+        <!-- TAB NAV (desktop) -->
         <div class="tab-nav">
             <button class="tab-btn" data-tab="bitacora" onclick="switchTab('bitacora',this)"><i class="fa fa-book-open"></i>
                 Bitácora</button>
@@ -1841,6 +1954,7 @@
 
                 <!-- Info box removed per user request -->
 
+                <!-- ═══ MOBILE LEADERBOARD (visible solo en mobile) ═══ -->
                 <div class="lb-mobile">
                     <div class="lb-sort">
                         <button class="lb-sort-btn active" data-sort="prima" onclick="setMobileLbSort('prima')">Prima ↓</button>
@@ -1851,7 +1965,7 @@
                     <div id="lb-mobile-rows"></div>
                 </div>
 
-                <!-- Subview PENDIENTES (mobile only) -->
+                <!-- Subview PENDIENTES (mobile only, controlado por sub-tabs) -->
                 <div id="lb-mobile-pendientes-subview" style="display:none;">
                     <div id="lb-mobile-pendientes"></div>
                 </div>
@@ -1868,8 +1982,9 @@
                                     Ratios PECVS</th>
                                 <th colspan="1" style="border-left:2px solid #475569;border-bottom:1px solid #475569">
                                     Ratios de efectividad</th>
+                                <th rowspan="2" style="border-left:2px solid #475569;color:var(--green);">Prima Neta ($)</th>
                                 <th colspan="2" style="border-left:2px solid #475569;border-bottom:1px solid #475569">
-                                    Prima promedio ($)</th>
+                                    Promedios en base a $</th>
                                 <th colspan="2" style="border-left:2px solid #475569;border-bottom:1px solid #475569">
                                     Actividad NO Válida (🔴)</th>
                             </tr>
@@ -1882,9 +1997,9 @@
                                 <th title="Contactos por entrevista" style="border-left:2px solid #475569">P/E</th>
                                 <th title="Entrevistas por cotización">E/C</th>
                                 <th title="Cotizaciones por cierre">C/V</th>
-                                <th title="Contactos por cierre" style="border-left:2px solid #475569">P/V</th>
-                                <th title="Prima Total" style="border-left:2px solid #475569">Neta</th>
-                                <th title="Prima por cierre">$/V</th>
+                                <th title="Conversión Prospecto a Cierre" style="border-left:2px solid #475569">P/V</th>
+                                <th title="Prima por Venta" style="border-left:2px solid #475569">$/V</th>
+                                <th title="Prima por integrante del equipo">$/Integrante</th>
                                 <th title="Solicitudes en días rojos"
                                     style="border-left:2px solid #475569;color:var(--red)">S (R)</th>
                                 <th title="Prima en días rojos" style="color:var(--red)">$ (R)</th>
@@ -1892,7 +2007,7 @@
                         </thead>
                         <tbody id="lb-body">
                             <tr class="no-data-row">
-                                <td colspan="15">No hay datos. Carga entradas en la Bitácora.</td>
+                                <td colspan="14">No hay datos. Carga entradas en la Bitácora.</td>
                             </tr>
                         </tbody>
                         <tfoot id="lb-foot"></tfoot>
@@ -1915,62 +2030,38 @@
                             <option value="all">Todo el historial</option>
                         </select>
                     </div>
-                    <div style="flex:1 1 100%;">
-                        <label class="field-label">Vista</label>
-                        <div class="kpi-pills" id="kpi-view-pills">
-                            <button class="kpi-pill active" data-mode="top10" onclick="setKpiViewMode('top10')">🥇 Top 10</button>
-                            <button class="kpi-pill" data-mode="top30" onclick="setKpiViewMode('top30')">🏆 Top 30</button>
-                            <button class="kpi-pill" data-mode="all" onclick="setKpiViewMode('all')">👥 Todos</button>
-                            <button class="kpi-pill" data-mode="foco30" onclick="setKpiViewMode('foco30')">🎯 Foco 30</button>
-                            <button class="kpi-pill" data-mode="foco10" onclick="setKpiViewMode('foco10')">🔥 Foco 10</button>
-                        </div>
-                    </div>
                 </div>
                 <div class="charts-grid">
                     <!-- 1. Volumen PECVS Completo (full width) -->
                     <div class="chart-card full">
                         <h3><i class="fa fa-arrows-to-circle"></i> Volumen PECVS Completo por Agente</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiVolumeFull"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiVolumeFull"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiVolumeFull"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiVolumeFull"></canvas></div>
                     </div>
                     <!-- 2. Cierres V vs P -->
                     <div class="chart-card">
                         <h3><i class="fa fa-bars-progress"></i> Cierres (V) vs Contactos (P)</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiVolumen"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiVolumen"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiVolumen"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiVolumen"></canvas></div>
                     </div>
                     <!-- 3-6. Eficiencia (P → V primero, luego embudo en orden) -->
                     <div class="chart-card">
                         <h3><i class="fa fa-bullseye"></i> Eficiencia: Conversión P ➔ V (Cierre)</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiEfectividad"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiEfectividad"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiEfectividad"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiEfectividad"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fa fa-bullseye"></i> Eficiencia: Conversión P ➔ E</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiRatioEP"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiRatioEP"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiRatioEP"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiRatioEP"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fa fa-bullseye"></i> Eficiencia: Conversión E ➔ C</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiRatioCE"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiRatioCE"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiRatioCE"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiRatioCE"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fa fa-bullseye"></i> Eficiencia: Conversión C ➔ V</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiRatioVC"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiRatioVC"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiRatioVC"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiRatioVC"></canvas></div>
                     </div>
                     <div class="chart-card">
                         <h3><i class="fa fa-coins"></i> Prima promedio: $/S vs $/V</h3>
-                        <div class="kpi-chart-legend" id="legend-kpiPrimaPromedios"></div>
-                        <div class="chart-wrap kpi-scroll"><div class="kpi-chart-inner"><canvas id="kpiPrimaPromedios"></canvas></div></div>
-                        <div class="kpi-custom-scrollbar" data-for="kpiPrimaPromedios"><div class="kpi-custom-scroll-thumb"></div></div>
+                        <div class="chart-wrap"><canvas id="kpiPrimaPromedios"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -2200,12 +2291,12 @@
                     <i class="fa fa-graduation-cap-solid"></i> EL EMBUDO DE EFECTIVIDAD
                 </h2>
 
-                <div class="conceptos-grid">
-                    <!-- DEFINICIONES P/E/C/V — desktop: columna izq · mobile: order 2 -->
-                    <div class="conceptos-defs">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                    <!-- COLUMNA DEFINICIONES -->
+                    <div>
                         <div style="margin-bottom:24px;">
-                            <strong style="color:var(--gold); font-size:1.2em;">P - Personas contactadas en el día</strong><br>
-                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong> Personas buscadas activamente que tienes enfrente y a las que les podrías vender. El conteo empieza desde el primer contacto.</p>
+                            <strong style="color:var(--gold); font-size:1.2em;">P - Contactos del día</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong> Personas buscadas activamente. Empieza a contar desde que hay contacto. En venta en frío, no cuenta un simple saludo superficial. Trata de obtener datos clave, como nombre, teléfono, etc.</p>
                             <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Prospección y abordaje inicial.</em>
                         </div>
                         <div style="margin-bottom:24px;">
@@ -2219,34 +2310,15 @@
                             <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Tu capacidad para presentar y hablar de PRECIOS.</em>
                         </div>
                         <div style="margin-bottom:24px;">
-                            <strong style="color:var(--gold); font-size:1.2em;">V - Personas a las que se les vendió</strong><br>
-                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong> Personas (almas) a las que vendiste el producto. Si a una misma persona le vendiste varias solicitudes/pólizas, sigue contando como <strong>1 sola V</strong>. La diferencia con S (Solicitudes) es exactamente esa: V cuenta personas, S cuenta pólizas individuales.</p>
-                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Efectividad de venta por persona (no por póliza).</em>
+                            <strong style="color:var(--gold); font-size:1.2em;">V - Personas con cierre</strong><br>
+                            <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong> Número de individuos (almas) a los que vendiste; si le vendiste varias solicitudes a la misma persona, cuenta como un solo cierre.</p>
+                            <em style="color:var(--slate); font-size:12px;">¿Qué mide?: Efectividad de cierre y convicción.</em>
                         </div>
-                    </div>
 
-                    <!-- VISUAL EMBUDO — desktop: columna der sticky · mobile: order 1 -->
-                    <div class="conceptos-visual" style="background: rgba(255,255,255,0.03); border-radius:15px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
-                        <h2 style="font-family:'Playfair Display',serif; color:var(--white); margin-top:0;">EMBUDO MATEMÁTICO</h2>
-                        <div style="background:var(--gold); color:var(--bg); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
-                            REGLA: P ≥ E ≥ C ≥ V
-                        </div>
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 250px; margin: 0 auto; width:100%;">
-                            <div style="width: 100%; height: 45px; background: #3b82f6; clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">P - Contactos</div>
-                            <div style="width: 100%; height: 45px; background: #06b6d4; clip-path: polygon(5% 0%, 95% 0%, 90% 100%, 10% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">E - Entrevistas</div>
-                            <div style="width: 100%; height: 45px; background: #a855f7; clip-path: polygon(10% 0%, 90% 0%, 85% 100%, 15% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">C - Cotizaciones</div>
-                            <div style="width: 100%; height: 50px; background: #10b981; clip-path: polygon(15% 0%, 85% 0%, 80% 100%, 20% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">V - Cierres</div>
-                        </div>
-                        <p style="font-size:13px; color:var(--slate); margin-top:35px; line-height:1.6; text-align:justify; border-top: 1px solid rgba(255,255,255,0.1); padding-top:20px;">
-                            En sentido estricto el número debe ir de mayor a menor (o como máximo igual) en cada etapa del proceso. Es decir: <strong>nunca puede haber más entrevistas que prospectos contactados</strong>, ni más cotizaciones que entrevistas realizadas, ni más ventas concretadas que cotizaciones.
-                        </p>
-                    </div>
-
-                    <!-- MÉTRICAS DE VOLUMEN Y VALOR (S + $) — desktop: full-width · mobile: order 3 -->
-                    <div class="conceptos-prima">
-                        <h2 style="font-family:'Playfair Display',serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin:20px 0 25px; font-size:22px;">
+                        <h2 style="font-family:'Playfair Display',serif; color:var(--gold); border-bottom: 2px solid var(--gold); padding-bottom:10px; margin:40px 0 25px; font-size:22px;">
                             <i class="fa fa-chart-line"></i> MÉTRICAS DE VOLUMEN Y VALOR
                         </h2>
+
                         <div style="margin-bottom:24px;">
                             <strong style="color:var(--gold); font-size:1.2em;">S - Número de solicitudes</strong><br>
                             <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>Definición:</strong> Suma de solicitudes vendidas. Aquí SÍ se cuentan todas las solicitudes, sin importar si le vendiste a la misma persona varias solicitudes.</p>
@@ -2260,22 +2332,21 @@
                         </div>
                     </div>
 
-                    <!-- TOTOPOS — desktop: full-width abajo · mobile: order 4 -->
-                    <div class="conceptos-totopos" style="padding:18px; background:rgba(212,175,55,0.06); border:1px solid rgba(212,175,55,0.2); border-radius:12px;">
-                        <div style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
-                            <svg style="width:64px; height:64px; flex-shrink:0;"><use href="#totopo"/></svg>
-                            <strong style="color:var(--gold); font-size:1.3em;">Totopos — tu moneda</strong>
+                    <!-- COLUMNA VISUAL -->
+                    <div style="background: rgba(255,255,255,0.03); border-radius:15px; padding:25px; text-align:center; border: 1px solid rgba(255,255,255,0.05); height: fit-content; position: sticky; top: 20px;">
+                        <h2 style="font-family:'Playfair Display',serif; color:var(--white); margin-top:0;">EMBUDO MATEMÁTICO</h2>
+                        <div style="background:var(--gold); color:var(--bg); padding:4px 15px; border-radius:20px; display:inline-block; font-weight:bold; font-size:12px; margin-bottom:30px;">
+                            REGLA: P ≥ E ≥ C ≥ V
                         </div>
-                        <p style="font-size:14px; margin:8px 0; color:var(--white);"><strong>¿Qué son?</strong> Moneda virtual que ganás por reportar tu día. Premian la disciplina y la honestidad — no importa si el día estuvo bueno o flojo, lo que cuenta es que reportes.</p>
-                        <p style="font-size:14px; margin:14px 0 6px; color:var(--white);"><strong>¿Cómo ganártelos?</strong> Ganás <strong>10 totopos por cada día reportado</strong> en cualquiera de estos dos casos:</p>
-                        <ul style="font-size:13px; margin:6px 0 8px 22px; color:var(--white); line-height:1.7; padding-left:0;">
-                            <li>🟢 <strong>Semáforo en verde</strong> — el embudo cumple las reglas.</li>
-                            <li>🌙 <strong>"Sin intento de venta hoy"</strong> — declaraste honestamente que no hubo actividad. Cuenta igual. La opción aparece cuando todos los valores están en 0.</li>
-                        </ul>
-                        <p style="font-size:13px; margin:8px 0; color:var(--slate);">Si el semáforo queda en 🔴 (datos rotos / embudo inválido) ese día <strong>no</strong> genera totopos. El corte se hace a las <strong>12:00 AM</strong> — durante el día puedes corregir las veces que quieras.</p>
-                        <p style="font-size:13px; margin:8px 0; color:var(--slate);">⚠️ <strong style="color:var(--gold);">Auditoría:</strong> Se revisará al final del mes si lo reportado coincide con lo ingresado.</p>
-                        <p style="font-size:14px; margin:12px 0 8px; color:var(--white);"><strong>¿Para qué sirven?</strong> Los canjéas en la pestaña <strong>Tienda</strong> por premios que el director pone disponibles.</p>
-                        <em style="color:var(--slate); font-size:12px;">¿Qué miden?: Tu compromiso y consistencia con el reporte diario.</em>
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 250px; margin: 0 auto; width:100%;">
+                            <div style="width: 100%; height: 45px; background: #3b82f6; clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">P - Contactos</div>
+                            <div style="width: 100%; height: 45px; background: #06b6d4; clip-path: polygon(5% 0%, 95% 0%, 90% 100%, 10% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">E - Entrevistas</div>
+                            <div style="width: 100%; height: 45px; background: #a855f7; clip-path: polygon(10% 0%, 90% 0%, 85% 100%, 15% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">C - Cotizaciones</div>
+                            <div style="width: 100%; height: 50px; background: #10b981; clip-path: polygon(15% 0%, 85% 0%, 80% 100%, 20% 100%); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color:white;">V - Cierres</div>
+                        </div>
+                        <p style="font-size:13px; color:var(--slate); margin-top:35px; line-height:1.6; text-align:justify; border-top: 1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                            En sentido estricto el número debe ir de mayor a menor (o como máximo igual) en cada etapa del proceso. Es decir: <strong>nunca puede haber más entrevistas que prospectos contactados</strong>, ni más cotizaciones que entrevistas realizadas, ni más ventas concretadas que cotizaciones.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -2311,22 +2382,28 @@
         </div>
     </div>
 
+    <!-- BOTTOM NAV (mobile only, estilo iOS/Android) -->
     <nav class="bottom-nav">
         <button class="bn-btn active" data-tab="leaderboard" onclick="switchTab('leaderboard',this)">
-            <i class="fa fa-table"></i><span>Equipo</span>
+            <i class="fa fa-table"></i>
+            <span>Equipo</span>
             <span id="equipo-pendientes-badge" class="bn-badge" style="display:none;">0</span>
         </button>
         <button class="bn-btn" data-tab="kpis" onclick="switchTab('kpis',this)">
-            <i class="fa fa-chart-column"></i><span>KPIs</span>
+            <i class="fa fa-chart-column"></i>
+            <span>KPIs</span>
         </button>
         <button class="bn-btn" data-tab="charts" onclick="switchTab('charts',this)">
-            <i class="fa fa-chart-area"></i><span>Tend.</span>
+            <i class="fa fa-chart-area"></i>
+            <span>Tend.</span>
         </button>
         <button class="bn-btn" data-tab="tienda" onclick="switchTab('tienda',this);initCoachTienda()">
-            <i class="fa fa-store"></i><span>Tienda</span>
+            <i class="fa fa-store"></i>
+            <span>Tienda</span>
         </button>
         <button class="bn-btn" data-tab="conceptos" onclick="switchTab('conceptos',this)">
-            <i class="fa fa-lightbulb"></i><span>Concep.</span>
+            <i class="fa fa-lightbulb"></i>
+            <span>Concep.</span>
         </button>
     </nav>
 
@@ -2348,17 +2425,6 @@
         <div style="position:relative;max-width:92vw;max-height:90vh;">
             <button onclick="closeImagePreview()" style="position:absolute;top:-44px;right:0;background:none;border:none;color:var(--white);font-size:32px;cursor:pointer;z-index:2;line-height:1;">&times;</button>
             <img id="image-preview-img" alt="" style="max-width:92vw;max-height:90vh;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.5);display:block;">
-        </div>
-    </div>
-
-    <!-- INFO MODAL — explicación de métricas (Equipo Total) -->
-    <div class="modal-overlay" id="metric-info-modal" onclick="if(event.target===this)closeMetricInfo()">
-        <div class="info-modal-box">
-            <div class="info-modal-header">
-                <div class="info-modal-title" id="metric-info-title">—</div>
-                <button class="info-modal-close" onclick="closeMetricInfo()" aria-label="Cerrar">&times;</button>
-            </div>
-            <div class="info-modal-body" id="metric-info-body"></div>
         </div>
     </div>
 
@@ -2476,14 +2542,125 @@
                     <p style="font-size:10px; color:var(--slate); margin:4px 0 0;">Tus agentes se vinculan automáticamente con esta clave.</p>
                 </div>
                 <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
+                    <label class="field-label" style="margin-bottom:6px; display:block;">MI EQUIPO</label>
+                    <span id="team-display" style="font-size:16px; font-weight:700; color:var(--gold);">Equipo: Sin Código</span>
+                </div>
+                <div style="background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; padding:12px 14px;">
                     <label class="field-label" style="margin-bottom:6px; display:block;">MI REGIÓN</label>
                     <span id="disp-myregion" style="font-size:16px; font-weight:700; color:#fff;">—</span>
                 </div>
+                <!-- Hidden compat span: refreshAll() actualiza este id; el nombre visible viene de disp-myname. -->
+                <span id="coach-display" hidden></span>
                 <div>
                     <p class="section-label">Agentes en tu Equipo</p>
                     <div class="agent-list" id="agent-list"></div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Push notification permission banner (compacto, sin copy extra) -->
+    <div id="push-banner" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:linear-gradient(135deg,#1e3a8a,#0f172a); padding:12px 16px; border-bottom:1px solid rgba(212,175,55,0.3); box-shadow:0 4px 16px rgba(0,0,0,0.4); align-items:center; gap:10px;">
+        <div style="font-size:22px; flex-shrink:0;">🔔</div>
+        <div style="flex:1; color:#fff; font-size:15px; font-weight:700;">¿Activar notificaciones?</div>
+        <button onclick="requestPushPermission()" style="padding:8px 14px; background:var(--gold,#d4af37); color:#000; border:none; border-radius:8px; font-weight:800; font-size:13px; cursor:pointer; white-space:nowrap;">Aceptar</button>
+        <button onclick="dismissPushBanner()" style="padding:8px 12px; background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Rechazar</button>
+    </div>
+
+    <!-- NOTIFICATIONS MODAL — gestionar suscripción y prefs por tipo -->
+    <div class="modal-overlay" id="notif-modal">
+        <div class="modal-box">
+            <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin-top:0;"><i class="fa fa-bell" style="margin-right:8px;"></i>Notificaciones</h2>
+            <p style="font-size:12px; color:var(--slate); margin:0 0 18px;">Recibí avisos importantes del director y promotor directamente en tu dispositivo.</p>
+
+            <label id="notif-master-row" style="display:none; align-items:center; justify-content:space-between; padding:14px 16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; margin-bottom:12px; cursor:pointer; gap:12px;">
+                <div style="flex:1; min-width:0;">
+                    <div id="notif-master-title" style="font-size:15px; color:#fff; font-weight:700;">Notificaciones</div>
+                    <div id="notif-master-sub" style="font-size:12px; color:var(--slate); margin-top:3px;">Cargando…</div>
+                </div>
+                <input type="checkbox" id="notif-master-toggle" onchange="onMasterToggle()" style="width:26px; height:26px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;">
+            </label>
+
+            <div id="notif-status" style="display:none; font-size:13px; font-weight:600; color:#fff; margin-bottom:12px; line-height:1.4; padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:10px;">Cargando…</div>
+            <button id="notif-action-btn" class="btn btn-sm" style="display:none; width:100%; margin-bottom:10px;" onclick="onNotifActionClick()">Activar notificaciones</button>
+
+            <div id="notif-prefs" style="display:none; margin-top:8px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+                <div style="font-size:11px; color:var(--slate); font-weight:700; margin-bottom:10px; letter-spacing:0.5px;">RECIBIR AVISOS DE:</div>
+
+                <label class="notif-toggle-row" style="display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer;">
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:14px; color:#fff; font-weight:600;">📢 Anuncios de la dirección</div>
+                        <div style="font-size:11px; color:var(--slate); margin-top:2px;">Broadcasts importantes del director y promotor.</div>
+                    </div>
+                    <input type="checkbox" id="notif-pref-anuncios" onchange="saveNotifPrefs()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
+                </label>
+
+                <div style="padding:12px 0;">
+                    <label style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:14px; color:#fff; font-weight:600;">🎯 Objetivo diario del equipo</div>
+                            <div style="font-size:11px; color:var(--slate); margin-top:2px;">Te avisamos cuando tu equipo llegue al monto del día.</div>
+                        </div>
+                        <input type="checkbox" id="notif-pref-objetivo" onchange="onObjetivoToggle()" style="width:22px; height:22px; accent-color:var(--gold); cursor:pointer; flex-shrink:0;" checked>
+                    </label>
+                    <div id="notif-objetivo-input-row" style="display:flex; margin-top:10px; padding:8px 10px; background:rgba(0,0,0,0.2); border-radius:6px; align-items:center; gap:8px;">
+                        <span style="font-size:12px; color:rgba(255,255,255,0.7); font-weight:600;">Umbral:</span>
+                        <span style="font-size:14px; color:var(--gold); font-weight:700;">$</span>
+                        <input type="number" id="notif-pref-objetivo-amount" value="5000" min="0" step="500" onchange="saveNotifPrefs()" style="flex:1; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit;">
+                    </div>
+                </div>
+
+                <div id="notif-prefs-saved" style="display:none; font-size:11px; color:#34d399; margin-top:6px; text-align:right;">✓ Guardado</div>
+            </div>
+
+            <details style="margin-top:14px;">
+                <summary style="font-size:10px; color:rgba(255,255,255,0.4); cursor:pointer; user-select:none;">Diagnóstico técnico</summary>
+                <div id="notif-debug" style="font-size:10px; color:rgba(255,255,255,0.5); font-family:monospace; margin-top:6px; word-break:break-all;"></div>
+                <div id="notif-last-result" style="display:none; font-size:11px; font-family:monospace; padding:6px 8px; background:rgba(0,0,0,0.3); border-radius:6px; margin-top:6px; word-break:break-all; line-height:1.4;"></div>
+            </details>
+
+            <button class="btn btn-sm" style="margin-top:18px; width:100%;"
+                onclick="closeNotifModal()">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- ANUNCIOS MODAL — feed de anuncios del director y promotor (receive only) -->
+    <div class="modal-overlay" id="anuncios-modal">
+        <div class="modal-box" style="padding-top:48px;">
+            <!-- × sticky en esquina superior derecha (siempre alcanzable aún con muchas notifs) -->
+            <button onclick="closeAnunciosModal()" aria-label="Cerrar"
+                style="position:absolute; top:12px; right:12px; width:32px; height:32px; padding:0; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12); border-radius:50%; font-size:18px; line-height:1; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center;">&times;</button>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;">
+                <h2 style="font-family:'Playfair Display',serif; color:var(--gold); margin:0;"><i class="fa fa-bullhorn" style="margin-right:8px;"></i>Anuncios</h2>
+            </div>
+            <p style="font-size:12px; color:var(--slate); margin:0 0 12px;">Mensajes y broadcasts importantes del director y promotor.</p>
+
+            <!-- Acciones bulk: mark all read + clear hidden -->
+            <div id="anuncios-bulk-actions" style="display:none; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+                <button id="anuncios-mark-all-btn" onclick="markAllAnunciosRead()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px;" title="Marcar todos como leídos">
+                    <i class="fa fa-check-double"></i> Marcar leídos
+                </button>
+                <button id="anuncios-clear-read-btn" onclick="clearReadAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px;" title="Limpiar (ocultar) los que ya leíste">
+                    <i class="fa fa-broom"></i> Limpiar leídos
+                </button>
+                <button id="anuncios-clear-all-btn" onclick="clearAllAnuncios()" class="btn btn-sm" style="flex:1; min-width:130px; padding:7px 10px; font-size:11px; border-color:rgba(239,68,68,0.5); color:#f87171;" title="Ocultar todos los anuncios (siguen disponibles si querés volver a verlos manualmente)">
+                    <i class="fa fa-trash-can"></i> Limpiar todos
+                </button>
+            </div>
+
+            <!-- Lista de anuncios (se renderiza desde JS) -->
+            <div id="anuncios-list" style="display:flex; flex-direction:column; gap:10px; min-height:120px;">
+                <!-- Empty state placeholder — se reemplaza cuando hay datos -->
+                <div id="anuncios-empty" style="text-align:center; padding:40px 20px;">
+                    <div style="font-size:48px; opacity:0.3; margin-bottom:12px;">📢</div>
+                    <div style="font-size:14px; color:var(--slate); font-weight:600; margin-bottom:6px;">No tenés anuncios</div>
+                    <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.5;">Cuando el director o promotor manden algo, aparece acá.</div>
+                </div>
+            </div>
+
+            <button class="btn btn-sm" style="margin-top:18px; width:100%;"
+                onclick="closeAnunciosModal()">Cerrar</button>
         </div>
     </div>
 
@@ -2518,7 +2695,8 @@
         // --- IMPORT FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, addDoc, getDocs, collection, query, where, onSnapshot, runTransaction, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage, isSupported as isMessagingSupported } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging.js";
 
         // Initialize
         const app = initializeApp(firebaseConfig);
@@ -2526,12 +2704,44 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
+        // Messaging — puede no estar soportado en ciertos browsers/contextos.
+        const VAPID_KEY = "BJAvm3cQqMeJyZZghupjf6-viZ36TR_wMySv33PzeplYhLAWn6RSWIt4Mhj_YFZ-Ju5yiYZty3VRiWBPto8o-Ps";
+        let messaging = null;
+        isMessagingSupported().then(supported => {
+            if (supported) {
+                messaging = getMessaging(app);
+                onMessage(messaging, payload => {
+                    console.log('[push] Foreground message:', payload);
+                    const title = (payload.notification && payload.notification.title) || 'PECVS$';
+                    const body  = (payload.notification && payload.notification.body)  || '';
+                    showInAppToast(title, body);
+                });
+                console.log('[push] Messaging soportado e inicializado');
+            } else {
+                console.log('[push] Messaging NO soportado en este browser/contexto');
+            }
+        });
+
         // ─── STATE ───────────────────────────────────────────────────────────────────
         const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
         const COLS = ['P', 'E', 'C', 'V', 'S'];
         const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-        let state = { coachName: '', teamCode: '', promotorCode: '', directorCode: '', regionName: '', companyCode: '', agents: [], entries: [], reportes: [], karma: 0, karmaLog: [] };
+        // notifPrefs por defecto del coach: solo 2 tipos — anuncios de la dirección
+        // y objetivo diario del equipo (umbral configurable, default $5000).
+        // subscribed=true por defecto (first-time = enabled si acepta el banner).
+        // bannerDismissed=false → mostrar banner si perm=default.
+        const DEFAULT_NOTIF_PREFS = {
+            subscribed: true,
+            bannerDismissed: false,
+            anuncios: true,
+            objetivoDiario: {
+                enabled: true,
+                threshold: 5000,       // monto MXN — configurable
+                lastFiredDate: ''      // "YYYY-MM-DD" (TZ MX) — empty = aún no se disparó hoy
+            }
+        };
+        let state = { coachName: '', teamCode: '', promotorCode: '', directorCode: '', regionName: '', companyCode: '', agents: [], entries: [], reportes: [], karma: 0, karmaLog: [], notifPrefs: { ...DEFAULT_NOTIF_PREFS } };
         let user = null;
         let serverNow = null;
         let pointsConfig = { coachReportPoints: 500 };
@@ -2689,6 +2899,571 @@
             signOut(auth).then(() => location.reload());
         };
 
+        // ─── PUSH NOTIFICATIONS ──────────────────────────────────────────────────────
+        // Estados browser-level (no controlables programáticamente):
+        //   - perm 'default'  → nunca preguntado al OS
+        //   - perm 'granted'  → el OS permite
+        //   - perm 'denied'   → el OS bloquea — solo Ajustes del iPhone arregla
+        // Estados app-level (state.notifPrefs):
+        //   - subscribed:       master switch — si el user quiere recibir pushes
+        //   - bannerDismissed:  rechazó el banner → no aparece más automáticamente
+        async function subscribeToPush() {
+            if (!user) return;
+            if (!messaging) { console.log('[push] skip: messaging no disponible'); return; }
+            if (!('Notification' in window)) { console.log('[push] skip: Notification API ausente'); return; }
+            const isIOSDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            if (isIOSDevice && !isStandalone) {
+                console.log('[push] skip: iOS Safari browser no soporta web push');
+                return;
+            }
+            const perm = Notification.permission;
+            const prefs = state.notifPrefs || DEFAULT_NOTIF_PREFS;
+            if (perm === 'denied') return;
+            if (perm === 'granted') {
+                if (prefs.subscribed !== false) {
+                    try { await registerPushToken(); }
+                    catch (e) { console.error('[push] silent register failed:', e); }
+                }
+                return;
+            }
+            // perm === 'default'
+            if (prefs.bannerDismissed) return;
+            showPushPermissionBanner();
+        }
+
+        async function registerPushToken() {
+            if (!messaging) throw new Error('messaging no inicializado');
+            if (!user) throw new Error('no hay user logueado');
+            _setLastPushResult('Obteniendo token de FCM…', false);
+            const reg = await navigator.serviceWorker.ready;
+            let token;
+            try {
+                token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+            } catch (err) {
+                const msg = 'getToken falló: ' + (err && err.code ? err.code + ' — ' : '') + (err && err.message ? err.message : err);
+                _setLastPushResult(msg, true);
+                throw new Error(msg);
+            }
+            if (!token) {
+                const msg = 'getToken devolvió vacío (permiso revocado?)';
+                _setLastPushResult(msg, true);
+                throw new Error(msg);
+            }
+            _setLastPushResult('Token obtenido. Guardando en Firestore…', false);
+            const tokenId = token.substring(0, 40).replace(/[^a-zA-Z0-9_-]/g, '_');
+            try {
+                await setDoc(doc(db, 'coaches', user.email, 'pushTokens', tokenId), {
+                    token,
+                    createdAt: new Date().toISOString(),
+                    userAgent: navigator.userAgent,
+                    platform: _getPlatform()
+                }, { merge: true });
+            } catch (err) {
+                const msg = 'setDoc falló (¿reglas Firestore?): ' + (err && err.code ? err.code + ' — ' : '') + (err && err.message ? err.message : err);
+                _setLastPushResult(msg, true);
+                throw new Error(msg);
+            }
+            _setLastPushResult('✅ Token guardado: ' + token.substring(0, 30) + '…', false);
+            return token;
+        }
+
+        function _setLastPushResult(msg, isError) {
+            const el = document.getElementById('notif-last-result');
+            if (!el) return;
+            el.style.color = isError ? '#f87171' : '#34d399';
+            el.textContent = msg;
+            el.style.display = '';
+        }
+
+        function _getPlatform() {
+            const ua = navigator.userAgent;
+            if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+            if (/Android/i.test(ua)) return 'android';
+            return 'desktop';
+        }
+
+        async function _setNotifPrefsField(updates) {
+            if (!user) return;
+            state.notifPrefs = state.notifPrefs || { ...DEFAULT_NOTIF_PREFS };
+            Object.assign(state.notifPrefs, updates);
+            try {
+                await setDoc(doc(db, 'coaches', user.email), { notifPrefs: state.notifPrefs }, { merge: true });
+            } catch (err) { console.error('[notifPrefs] save error:', err); }
+        }
+
+        async function unsubscribeFromPush() {
+            if (!user) return;
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const sub = await reg.pushManager.getSubscription();
+                if (sub) await sub.unsubscribe();
+            } catch (e) { console.warn('[push] pushManager.unsubscribe error:', e); }
+            try {
+                const tokensRef = collection(db, 'coaches', user.email, 'pushTokens');
+                const snap = await getDocs(tokensRef);
+                for (const d of snap.docs) {
+                    try { await deleteDoc(doc(db, 'coaches', user.email, 'pushTokens', d.id)); }
+                    catch (e) { console.warn('[push] token delete fail:', e); }
+                }
+            } catch (e) { console.warn('[push] tokens collection read error:', e); }
+        }
+
+        window.requestPushPermission = async function () {
+            hidePushPermissionBanner();
+            try {
+                let result = Notification.permission;
+                if (result === 'default') {
+                    result = await Notification.requestPermission();
+                }
+                if (result === 'granted') {
+                    await registerPushToken();
+                    await _setNotifPrefsField({ subscribed: true, bannerDismissed: false });
+                    showInAppToast('✅ Notificaciones activadas', 'Vas a recibir avisos importantes.');
+                } else if (result === 'denied') {
+                    await _setNotifPrefsField({ subscribed: false });
+                    showInAppToast('🚫 Permiso denegado', 'Podés activarlo desde Ajustes del iPhone.');
+                }
+            } catch (err) {
+                console.error('[push] requestPermission error:', err);
+                showInAppToast('❌ Error', err.message || String(err));
+            }
+            if (typeof window.updateNotifStatus === 'function') window.updateNotifStatus();
+        };
+
+        window.dismissPushBanner = async function () {
+            hidePushPermissionBanner();
+            await _setNotifPrefsField({ bannerDismissed: true, subscribed: false });
+        };
+
+        function showPushPermissionBanner() {
+            const banner = document.getElementById('push-banner');
+            if (banner) banner.classList.add('show');
+            const bell = document.getElementById('notif-bell-btn');
+            const dot  = document.getElementById('notif-bell-dot');
+            if (bell) bell.classList.add('bell-pulsing');
+            if (dot)  dot.style.display = '';
+        }
+        function hidePushPermissionBanner() {
+            const banner = document.getElementById('push-banner');
+            if (banner) banner.classList.remove('show');
+            const bell = document.getElementById('notif-bell-btn');
+            const dot  = document.getElementById('notif-bell-dot');
+            if (bell) bell.classList.remove('bell-pulsing');
+            if (dot)  dot.style.display = 'none';
+        }
+
+        window.openNotifModal = function () {
+            const banner = document.getElementById('push-banner');
+            if (banner) banner.classList.remove('show');
+            const bell = document.getElementById('notif-bell-btn');
+            const dot  = document.getElementById('notif-bell-dot');
+            if (bell) bell.classList.remove('bell-pulsing');
+            if (dot)  dot.style.display = 'none';
+            document.getElementById('notif-modal').classList.add('open');
+            window.updateNotifStatus();
+        };
+
+        window.closeNotifModal = function () {
+            document.getElementById('notif-modal').classList.remove('open');
+        };
+
+        // ─── ANUNCIOS (feed real desde Firestore — 2 scopes para coach: director + promotor) ──
+        // 2 listeners independientes que escriben a un cache dict (dedup por id):
+        //   1. Director:  targetDirectorCode === state.directorCode  AND  targetRoles contains 'coaches'
+        //   2. Promotor:  targetPromotorTeamCode === state.promotorCode  AND  targetRoles contains 'coaches'
+        // El modal renderiza la unión, badge cuenta no-leídos del total.
+        let _anunciosUnsubs = [];       // array de unsubscribe functions
+        let _anunciosDict = {};          // { [id]: { id, ...data } } — dedup natural
+        let _anunciosCache = [];         // array ordenado, derivado del dict para render
+
+        function _rebuildAnunciosCache() {
+            const myId = user?.email || '';
+            // Excluir los que el user ocultó manualmente (hiddenBy)
+            _anunciosCache = Object.values(_anunciosDict)
+                .filter(a => !(a.hiddenBy || []).includes(myId))
+                .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+            const unread = _anunciosCache.filter(a => !(a.readBy || []).includes(myId)).length;
+            updateAnunciosBadge(unread);
+            if (document.getElementById('anuncios-modal').classList.contains('open')) {
+                renderAnunciosList();
+            }
+        }
+
+        function _handleAnunciosSnapshot(snap) {
+            snap.docChanges().forEach(change => {
+                if (change.type === 'removed') {
+                    delete _anunciosDict[change.doc.id];
+                } else {
+                    _anunciosDict[change.doc.id] = { id: change.doc.id, ...change.doc.data() };
+                }
+            });
+            _rebuildAnunciosCache();
+        }
+
+        async function startAnunciosListener() {
+            if (!user) return;
+            // Cleanup any previous listeners (en caso de re-login)
+            stopAnunciosListener();
+
+            // ── Listener 1: scope DIRECTOR (anuncios del director dirigidos a coaches) ──
+            if (state.directorCode) {
+                const qDirector = query(
+                    collection(db, 'announcements'),
+                    where('targetDirectorCode', '==', state.directorCode),
+                    where('targetRoles', 'array-contains', 'coaches')
+                );
+                _anunciosUnsubs.push(onSnapshot(qDirector, _handleAnunciosSnapshot,
+                    (err) => console.error('[anuncios] director listener:', err)));
+            }
+
+            // ── Listener 2: scope PROMOTER (anuncios del promotor dirigidos a coaches) ──
+            // state.promotorCode contiene el teamCode del promotor (poblado desde data.promotorTeamCode en loadCoachData).
+            if (state.promotorCode) {
+                const qPromoter = query(
+                    collection(db, 'announcements'),
+                    where('targetPromotorTeamCode', '==', state.promotorCode),
+                    where('targetRoles', 'array-contains', 'coaches')
+                );
+                _anunciosUnsubs.push(onSnapshot(qPromoter, _handleAnunciosSnapshot,
+                    (err) => console.error('[anuncios] promoter listener:', err)));
+            }
+        }
+
+        function stopAnunciosListener() {
+            _anunciosUnsubs.forEach(u => { try { u(); } catch(e){} });
+            _anunciosUnsubs = [];
+            _anunciosDict = {};
+            _anunciosCache = [];
+        }
+
+        window.openAnunciosModal = function () {
+            document.getElementById('anuncios-modal').classList.add('open');
+            // Iniciar listener si todavía no estaba activo
+            startAnunciosListener();
+            renderAnunciosList();
+        };
+
+        window.closeAnunciosModal = function () {
+            document.getElementById('anuncios-modal').classList.remove('open');
+        };
+
+        function renderAnunciosList() {
+            const empty    = document.getElementById('anuncios-empty');
+            const listEl   = document.getElementById('anuncios-list');
+            const markBtn  = document.getElementById('anuncios-mark-all-btn');
+            const bulkBar  = document.getElementById('anuncios-bulk-actions');
+            const clearReadBtn = document.getElementById('anuncios-clear-read-btn');
+            const myId     = user?.email || '';
+
+            // Bulk actions visible solo si hay items
+            if (bulkBar) bulkBar.style.display = _anunciosCache.length ? 'flex' : 'none';
+
+            if (!_anunciosCache.length) {
+                if (empty) empty.style.display = '';
+                if (listEl) {
+                    Array.from(listEl.children).forEach(c => {
+                        if (c.id !== 'anuncios-empty') c.remove();
+                    });
+                }
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+            const hasUnread = _anunciosCache.some(a => !(a.readBy || []).includes(myId));
+            const hasRead   = _anunciosCache.some(a =>  (a.readBy || []).includes(myId));
+            if (markBtn)       markBtn.style.display       = hasUnread ? '' : 'none';
+            if (clearReadBtn)  clearReadBtn.style.display  = hasRead ? '' : 'none';
+
+            // Render cards
+            if (listEl) {
+                Array.from(listEl.children).forEach(c => {
+                    if (c.id !== 'anuncios-empty') c.remove();
+                });
+                _anunciosCache.forEach(a => {
+                    const isUnread = !(a.readBy || []).includes(myId);
+                    const dt = a.createdAt ? new Date(a.createdAt).toLocaleString('es-MX',
+                        { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                    const card = document.createElement('div');
+                    card.style.cssText = `position:relative; padding:12px 36px 12px 14px; background:${isUnread ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)'};
+                        border:1px solid ${isUnread ? 'rgba(212,175,55,0.35)' : 'rgba(255,255,255,0.08)'};
+                        border-radius:8px; transition:background .15s;`;
+                    card.innerHTML = `
+                        <button onclick="event.stopPropagation(); hideAnuncio('${a.id}')" aria-label="Ocultar"
+                            style="position:absolute; top:8px; right:8px; width:24px; height:24px; padding:0; background:transparent; color:rgba(255,255,255,0.4); border:none; font-size:18px; line-height:1; cursor:pointer; border-radius:50%; display:flex; align-items:center; justify-content:center;">&times;</button>
+                        <div style="cursor:pointer;" data-mark-read>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:6px; padding-right:8px;">
+                                <div style="font-weight:700; color:${isUnread ? 'var(--gold-l)' : '#fff'}; font-size:14px; line-height:1.3;">
+                                    ${isUnread ? '<span style="color:#ef4444; margin-right:4px;">●</span>' : ''}${escapeHtml(a.title || '')}
+                                </div>
+                                <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
+                            </div>
+                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${escapeHtml(a.body || '')}</div>
+                            <div style="font-size:10px; color:var(--slate);">— ${escapeHtml(a.createdByName || a.createdBy || '')}</div>
+                        </div>
+                    `;
+                    // Click on card (excepto en el botón ×) marca como leído
+                    const inner = card.querySelector('[data-mark-read]');
+                    if (inner) inner.onclick = () => markAnuncioRead(a.id);
+                    listEl.appendChild(card);
+                });
+            }
+        }
+
+        function updateAnunciosBadge(count) {
+            const badge = document.getElementById('anuncios-badge');
+            if (!badge) return;
+            if (count > 0) {
+                badge.textContent = count > 99 ? '99+' : String(count);
+                badge.classList.add('show');
+            } else {
+                badge.classList.remove('show');
+            }
+        }
+
+        async function markAnuncioRead(annId) {
+            if (!user || !annId) return;
+            const myId = user.email;
+            const ann = _anunciosCache.find(a => a.id === annId);
+            if (!ann) return;
+            const readBy = Array.isArray(ann.readBy) ? ann.readBy : [];
+            if (readBy.includes(myId)) return; // ya leído
+            try {
+                const newReadBy = [...new Set([...readBy, myId])];
+                await setDoc(doc(db, 'announcements', annId), { readBy: newReadBy }, { merge: true });
+                // El onSnapshot va a actualizar el cache y re-renderizar automáticamente
+            } catch (err) {
+                console.error('[anuncios] mark read error:', err);
+            }
+        }
+
+        window.markAllAnunciosRead = async function () {
+            if (!user) return;
+            const myId = user.email;
+            const unread = _anunciosCache.filter(a => !(a.readBy || []).includes(myId));
+            for (const a of unread) {
+                await markAnuncioRead(a.id);
+            }
+        };
+
+        // Oculta un anuncio para mí (otros coaches lo siguen viendo). También lo marca como leído.
+        window.hideAnuncio = async function (annId) {
+            if (!user || !annId) return;
+            const myId = user.email;
+            const ann = _anunciosDict[annId];
+            if (!ann) return;
+            const hiddenBy = Array.isArray(ann.hiddenBy) ? ann.hiddenBy : [];
+            const readBy   = Array.isArray(ann.readBy)   ? ann.readBy   : [];
+            if (hiddenBy.includes(myId)) return;
+            try {
+                const newHiddenBy = [...new Set([...hiddenBy, myId])];
+                const newReadBy   = [...new Set([...readBy, myId])];
+                await setDoc(doc(db, 'announcements', annId),
+                    { hiddenBy: newHiddenBy, readBy: newReadBy }, { merge: true });
+                // El onSnapshot lo va a sacar del cache automáticamente
+            } catch (err) {
+                console.error('[anuncios] hide error:', err);
+            }
+        };
+
+        // Oculta todos los que ya leí
+        window.clearReadAnuncios = async function () {
+            if (!user) return;
+            const myId = user.email;
+            const toHide = _anunciosCache.filter(a => (a.readBy || []).includes(myId));
+            for (const a of toHide) {
+                await hideAnuncio(a.id);
+            }
+        };
+
+        // Oculta TODOS (también marca como leídos)
+        window.clearAllAnuncios = async function () {
+            if (!user) return;
+            if (!confirm('¿Ocultar todos los anuncios? Esta acción solo afecta tu vista — el director y promotor siguen viéndolos.')) return;
+            const all = [..._anunciosCache];
+            for (const a of all) {
+                await hideAnuncio(a.id);
+            }
+        };
+
+        function showInAppToast(title, body) {
+            const toast = document.createElement('div');
+            toast.className = 'in-app-toast';
+            toast.innerHTML = `
+                <div class="toast-title">${escapeHtml(title)}</div>
+                <div class="toast-body">${escapeHtml(body)}</div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        window.updateNotifStatus = function () {
+            const statusEl     = document.getElementById('notif-status');
+            const debugEl      = document.getElementById('notif-debug');
+            const btnEl        = document.getElementById('notif-action-btn');
+            const masterRow    = document.getElementById('notif-master-row');
+            const masterToggle = document.getElementById('notif-master-toggle');
+            const masterSub    = document.getElementById('notif-master-sub');
+            const prefsPanel   = document.getElementById('notif-prefs');
+            if (!statusEl || !btnEl) return;
+            const isIOSDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+            const hasNotifAPI = ('Notification' in window);
+            const perm        = hasNotifAPI ? Notification.permission : 'no-api';
+            const messagingOK = !!messaging;
+            const prefs       = state.notifPrefs || DEFAULT_NOTIF_PREFS;
+            const subscribed  = prefs.subscribed !== false;
+            if (debugEl) {
+                debugEl.textContent = [
+                    'platform=' + (isIOSDevice ? 'iOS' : (/Android/i.test(navigator.userAgent) ? 'Android' : 'Desktop')),
+                    'standalone=' + isStandalone,
+                    'perm=' + perm,
+                    'subscribed=' + subscribed,
+                    'bannerDismissed=' + (prefs.bannerDismissed === true)
+                ].join(' · ');
+            }
+            const showStatus = (html) => { statusEl.style.display = ''; statusEl.innerHTML = html; };
+            const hideStatus = () => { statusEl.style.display = 'none'; };
+            const showMaster = (show) => { if (masterRow) masterRow.style.display = show ? 'flex' : 'none'; };
+            const showPrefs  = (show) => { if (prefsPanel) prefsPanel.style.display = show ? 'block' : 'none'; };
+            btnEl.style.display = 'none';
+            if (isIOSDevice && !isStandalone) {
+                showStatus('⚠️ <b>Instalá la app como PWA primero.</b> Compartir → Agregar a inicio.');
+                showMaster(false); showPrefs(false); return;
+            }
+            if (!hasNotifAPI) {
+                showStatus('❌ Este navegador no soporta notificaciones.');
+                showMaster(false); showPrefs(false); return;
+            }
+            if (!messagingOK) {
+                showStatus('❌ Firebase Messaging no disponible en este contexto.');
+                showMaster(false); showPrefs(false); return;
+            }
+            if (perm === 'denied') {
+                if (isIOSDevice) {
+                    showStatus('🚫 <b style="color:#f87171;">Bloqueadas en iOS.</b><br><span style="font-size:11px; color:var(--slate);">Ajustes → Notificaciones → buscá esta app → Permitir.</span>');
+                } else {
+                    showStatus('🚫 <b style="color:#f87171;">Bloqueadas.</b><br><span style="font-size:11px; color:var(--slate);">Candado al lado de la URL → Notificaciones → Permitir. Refrescá.</span>');
+                }
+                showMaster(false); showPrefs(false); return;
+            }
+            hideStatus();
+            showMaster(true);
+            const isOn = (perm === 'granted' && subscribed);
+            if (masterToggle) masterToggle.checked = isOn;
+            if (masterSub) {
+                masterSub.textContent = isOn
+                    ? 'Tu dispositivo recibe avisos del director y promotor.'
+                    : 'Activá para recibir avisos importantes.';
+                masterSub.style.color = isOn ? '#34d399' : 'var(--slate)';
+            }
+            if (isOn) { showPrefs(true); loadNotifPrefsIntoUI(); }
+            else { showPrefs(false); }
+        };
+
+        window.onMasterToggle = async function () {
+            const toggle = document.getElementById('notif-master-toggle');
+            if (!toggle || !user) return;
+            const wantOn = toggle.checked;
+            toggle.disabled = true;
+            try {
+                if (wantOn) {
+                    let perm = Notification.permission;
+                    if (perm === 'default') perm = await Notification.requestPermission();
+                    if (perm === 'granted') {
+                        await registerPushToken();
+                        await _setNotifPrefsField({ subscribed: true, bannerDismissed: false });
+                        showInAppToast('✅ Notificaciones activadas', 'Vas a recibir avisos importantes.');
+                    } else if (perm === 'denied') {
+                        toggle.checked = false;
+                        showInAppToast('🚫 Bloqueado por iOS', 'Activá desde Ajustes del iPhone.');
+                    } else {
+                        toggle.checked = false;
+                    }
+                } else {
+                    await unsubscribeFromPush();
+                    await _setNotifPrefsField({ subscribed: false });
+                    showInAppToast('🔕 Desactivadas', 'No vas a recibir más notificaciones.');
+                }
+            } catch (err) {
+                console.error('[push] master toggle error:', err);
+                showInAppToast('❌ Error', err.message || String(err));
+                toggle.checked = !wantOn;
+            } finally {
+                toggle.disabled = false;
+                window.updateNotifStatus();
+            }
+        };
+
+        function loadNotifPrefsIntoUI() {
+            const p = state.notifPrefs || DEFAULT_NOTIF_PREFS;
+            const anuncios = document.getElementById('notif-pref-anuncios');
+            const objetivo = document.getElementById('notif-pref-objetivo');
+            const objAmt   = document.getElementById('notif-pref-objetivo-amount');
+            const objRow   = document.getElementById('notif-objetivo-input-row');
+            if (anuncios) anuncios.checked = !!p.anuncios;
+            const obj = (p.objetivoDiario && typeof p.objetivoDiario === 'object')
+                ? p.objetivoDiario
+                : DEFAULT_NOTIF_PREFS.objetivoDiario;
+            if (objetivo) objetivo.checked = !!obj.enabled;
+            if (objAmt)   objAmt.value     = obj.threshold || DEFAULT_NOTIF_PREFS.objetivoDiario.threshold;
+            if (objRow)   objRow.style.display = obj.enabled ? 'flex' : 'none';
+        }
+
+        window.onObjetivoToggle = function () {
+            const checkbox = document.getElementById('notif-pref-objetivo');
+            const row = document.getElementById('notif-objetivo-input-row');
+            if (row) row.style.display = (checkbox && checkbox.checked) ? 'flex' : 'none';
+            window.saveNotifPrefs();
+        };
+
+        // Stub legacy — el toggle del recordatorio ya no existe en la UI del coach,
+        // pero dejamos la función definida por compatibilidad con código viejo.
+        window.onRecordatorioToggle = function () { window.saveNotifPrefs(); };
+
+        let _saveNotifPrefsTimer = null;
+        window.saveNotifPrefs = function () {
+            if (!user) return;
+            const anuncios = !!document.getElementById('notif-pref-anuncios')?.checked;
+            const objEn    = !!document.getElementById('notif-pref-objetivo')?.checked;
+            const objAmt   = parseInt(document.getElementById('notif-pref-objetivo-amount')?.value || '5000', 10);
+            // Mantener lastFiredDate si ya existe (no resetear al cambiar umbral)
+            const prevLastFired = state.notifPrefs?.objetivoDiario?.lastFiredDate || '';
+            const newPrefs = {
+                anuncios,
+                objetivoDiario: {
+                    enabled: objEn,
+                    threshold: isNaN(objAmt) || objAmt < 0 ? 5000 : objAmt,
+                    lastFiredDate: prevLastFired
+                }
+            };
+            state.notifPrefs = Object.assign(state.notifPrefs || {}, newPrefs);
+            if (_saveNotifPrefsTimer) clearTimeout(_saveNotifPrefsTimer);
+            _saveNotifPrefsTimer = setTimeout(async () => {
+                try {
+                    await setDoc(doc(db, 'coaches', user.email), { notifPrefs: state.notifPrefs }, { merge: true });
+                    const ok = document.getElementById('notif-prefs-saved');
+                    if (ok) {
+                        ok.style.display = '';
+                        setTimeout(() => { if (ok) ok.style.display = 'none'; }, 1500);
+                    }
+                } catch (err) {
+                    console.error('[notifPrefs] save error:', err);
+                    showInAppToast('❌ Error guardando preferencias', err.message || String(err));
+                }
+            }, 400);
+        };
+
+        window.onNotifActionClick = async function () {
+            // Compatibility shim — el botón está oculto pero por las dudas
+            window.requestPushPermission();
+        };
+
         onAuthStateChanged(auth, async (u) => {
             if (u) {
                 // Detectar cambio de usuario y forzar recarga (evita data leak en memoria)
@@ -2706,6 +3481,9 @@
                     await loadCoachData();
                     startCoachDocListener(); // real-time updates desde Firestore
                     init();
+                    subscribeToPush().catch(err => console.error('[push] subscribeToPush:', err));
+                    // Iniciar listener de anuncios para mantener badge y modal actualizados
+                    startAnunciosListener();
                 } else if (status === 'inactive') {
                     document.getElementById('login-overlay').classList.add('hidden');
                     document.getElementById('revoked-overlay').style.display = 'flex';
@@ -2827,6 +3605,24 @@
                 state.reclutamiento = data.reclutamiento || [];
                 state.karma = data.karma || 0;
                 state.karmaLog = data.karmaLog || [];
+                // notifPrefs defensive init — preserva valores guardados y rellena los faltantes.
+                // Solo 2 tipos para coach: anuncios + objetivoDiario. Si vienen prefs viejas
+                // (reconocimientos / recordatorio) se preservan en el doc pero no se usan.
+                if (!data.notifPrefs || typeof data.notifPrefs !== 'object') {
+                    state.notifPrefs = { ...DEFAULT_NOTIF_PREFS };
+                } else {
+                    state.notifPrefs = { ...DEFAULT_NOTIF_PREFS, ...data.notifPrefs };
+                    if (typeof state.notifPrefs.subscribed !== 'boolean') state.notifPrefs.subscribed = DEFAULT_NOTIF_PREFS.subscribed;
+                    if (typeof state.notifPrefs.bannerDismissed !== 'boolean') state.notifPrefs.bannerDismissed = DEFAULT_NOTIF_PREFS.bannerDismissed;
+                    if (typeof state.notifPrefs.anuncios !== 'boolean') state.notifPrefs.anuncios = DEFAULT_NOTIF_PREFS.anuncios;
+                    if (!state.notifPrefs.objetivoDiario || typeof state.notifPrefs.objetivoDiario !== 'object') {
+                        state.notifPrefs.objetivoDiario = { ...DEFAULT_NOTIF_PREFS.objetivoDiario };
+                    } else {
+                        if (typeof state.notifPrefs.objetivoDiario.enabled !== 'boolean') state.notifPrefs.objetivoDiario.enabled = DEFAULT_NOTIF_PREFS.objetivoDiario.enabled;
+                        if (typeof state.notifPrefs.objetivoDiario.threshold !== 'number') state.notifPrefs.objetivoDiario.threshold = DEFAULT_NOTIF_PREFS.objetivoDiario.threshold;
+                        if (typeof state.notifPrefs.objetivoDiario.lastFiredDate !== 'string') state.notifPrefs.objetivoDiario.lastFiredDate = '';
+                    }
+                }
                 document.getElementById('team-display').textContent = 'Equipo: ' + (state.teamCode || 'Sin Código');
                 startListeningAgents();
             } else {
@@ -2910,6 +3706,7 @@
                 const agentDetails = {};
                 snapshot.forEach((doc) => {
                     const agentData = doc.data();
+                    // Skip inactivos: no aparecen en leaderboard ni en pendientes
                     if (agentData.status === 'inactive') return;
                     if (agentData.agentName) {
                         allAgents.push(agentData.agentName);
@@ -2919,8 +3716,10 @@
                             approvedAt: agentData.approvedAt || null
                         };
                         if (agentData.entries) {
+                            // Ensure each entry knows which agent it belongs to
                             agentData.entries.forEach(e => {
                                 e.agent = agentData.agentName;
+                                // Deduplicate or merge entries
                                 const existingIdx = allEntries.findIndex(ae => ae.agent === e.agent && ae.mes === e.mes && ae.semana == e.semana);
                                 if (existingIdx >= 0) allEntries[existingIdx] = e;
                                 else allEntries.push(e);
@@ -2936,15 +3735,14 @@
         }
 
         // ─── PENDIENTES (sin actividad reciente) ──────────────────────────────────────
-        // Coach solo ve sus propios agentes → sin filtro de coach.
-        // Filtro de tier exclusivo: '' = panorama, '0'/'2'/'3'/'4'/'5' = solo ese tier.
+        // Versión coach: solo lista los agentes del coach logueado, sin filtro de coach
+        // (no aplica) y sin segunda línea "Coach: X" (el coach es el usuario actual).
+        // Filtro de tier exclusivo: '' = panorama (todos), '0'/'2'/'3'/'4'/'5' = solo ese tier
         let pendientesTierFilter = '';
 
         function computeLastActivityMap() {
             const map = {};
             (state.entries || []).forEach(e => {
-                const key = e.agentId || e.agent;
-                if (!key) return;
                 const [mesName, yearStr] = e.mes.split(' ');
                 const monthIdx = MONTHS_ES.indexOf(mesName);
                 const year = parseInt(yearStr);
@@ -2956,7 +3754,7 @@
                     const dayIdx = DAYS.indexOf(d.dia);
                     const dayOfMonth = (semana - 1) * 7 + dayIdx + 1;
                     const date = new Date(year, monthIdx, Math.min(dayOfMonth, 28));
-                    if (!map[key] || date > map[key]) map[key] = date;
+                    if (!map[e.agent] || date > map[e.agent]) map[e.agent] = date;
                 });
             });
             return map;
@@ -2986,7 +3784,8 @@
                 return {
                     tier: 0,
                     label: 'Sin actividad desde que se registró',
-                    icon: '❓', color: '#f59e0b',
+                    icon: '❓',
+                    color: '#f59e0b',
                     secondLine: approvedAt ? `Registrado hace ${formatDaysSince(approvedAt, hoy)}` : null
                 };
             }
@@ -3007,6 +3806,8 @@
                 if (!cls) return;
                 list.push({ name, ...cls });
             });
+            // Orden: 3 días → 1 semana → 1 quincena → 1 mes+ (ascendente),
+            // nunca-reportó al final como categoría separada.
             list.sort((a, b) => {
                 if (a.tier === 0 && b.tier !== 0) return 1;
                 if (b.tier === 0 && a.tier !== 0) return -1;
@@ -3042,12 +3843,17 @@
             const allPendientes = getPendientes();
             const filtered = applyPendientesFilters(allPendientes);
 
+            // Badge: TOTAL sin filtros, en sub-tab + bottom nav
             const countLabel = allPendientes.length > 99 ? '99+' : String(allPendientes.length);
             ['lb-subtab-pendientes-badge', 'equipo-pendientes-badge'].forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
-                if (allPendientes.length > 0) { el.style.display = 'inline-flex'; el.textContent = countLabel; }
-                else el.style.display = 'none';
+                if (allPendientes.length > 0) {
+                    el.style.display = 'inline-flex';
+                    el.textContent = countLabel;
+                } else {
+                    el.style.display = 'none';
+                }
             });
 
             if (allPendientes.length === 0) {
@@ -3062,6 +3868,7 @@
                 return;
             }
 
+            // Brackets exclusivos con conteo por opción.
             const tierCounts = { 0: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
             allPendientes.forEach(p => { if (tierCounts[p.tier] !== undefined) tierCounts[p.tier]++; });
             const filterOpts = [
@@ -3079,7 +3886,9 @@
                 ? `<div class="lb-mobile-empty" style="padding:24px 16px;font-size:13px;">Sin pendientes con los filtros actuales.</div>`
                 : filtered.map(p => {
                     const tierClass = `tier-${p.tier}`;
-                    const secondLine = p.secondLine ? `<div class="lb-ghost-second-line">${escapeHtml(p.secondLine)}</div>` : '';
+                    const secondLine = p.secondLine
+                        ? `<div class="lb-ghost-second-line">${escapeHtml(p.secondLine)}</div>`
+                        : '';
                     return `
                         <div class="lb-ghost-card ${tierClass}">
                             <div class="lb-ghost-icon">${p.icon}</div>
@@ -3145,9 +3954,13 @@
         // ─── TABS ─────────────────────────────────────────────────────────────────────
         function switchTab(name, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            // Limpiar active en AMBOS navs (top tabs desktop + bottom nav mobile)
             document.querySelectorAll('.tab-btn, .bn-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
+            // Activar el botón correspondiente en ambos navs (matched por data-tab)
             document.querySelectorAll(`[data-tab="${name}"]`).forEach(b => b.classList.add('active'));
+            // Refrescar karma badge en cada nav — fix bug "no me salen los totopos
+            // hasta que paso a la tienda" (race entre loadCoachData y listener)
             if (typeof updateKarmaDisplay === 'function') updateKarmaDisplay();
             if (name === 'charts') renderCharts();
             if (name === 'kpis') renderKPIs();
@@ -3546,7 +4359,7 @@
         }
 
         // ─── LEADERBOARD ──────────────────────────────────────────────────────────────
-        function ratio(a, b) { return b > 0 ? (a / b).toFixed(2) : '—'; } // mantenido para primas ($/V, $/S)
+        function ratio(a, b) { return b > 0 ? (a / b).toFixed(2) : '—'; } // mantenido para primas ($/V)
         function ratioPct(a, b) { return b > 0 ? ((a / b) * 100).toFixed(1) + '%' : '—'; } // % para conversiones
 
         let showRedData = false;
@@ -3573,52 +4386,6 @@
             el.classList.toggle('open');
         };
 
-        // ─── INFO MODAL para métricas del Equipo Total ─────────────────────────────
-        const METRIC_INFO = {
-            efPV: {
-                title: '📊 Eficiencia P → V',
-                body: `
-                    <span class="info-label">¿Qué mide?</span>
-                    <p>% de contactos que terminaron en cierre.</p>
-                    <span class="info-label">Fórmula</span>
-                    <p><code>(V ÷ P) × 100</code></p>
-                    <p style="color:var(--slate);font-size:12px;">Efectividad final del equipo de principio a fin del embudo.</p>
-                `
-            },
-            dolPerV: {
-                title: '💰 $/V — Prima por cierre',
-                body: `
-                    <span class="info-label">¿Qué mide?</span>
-                    <p>Prima promedio que paga cada persona que compró.</p>
-                    <span class="info-label">Fórmula</span>
-                    <p><code>Prima total ÷ V (cierres)</code></p>
-                    <p style="color:var(--slate);font-size:12px;">Indica el valor promedio de cada venta del equipo.</p>
-                `
-            },
-            dolPerInt: {
-                title: '👥 $/Integrante — Producción por persona',
-                body: `
-                    <span class="info-label">¿Qué mide?</span>
-                    <p>Prima promedio generada por cada miembro activo del equipo.</p>
-                    <span class="info-label">Fórmula</span>
-                    <p><code>Prima total ÷ # agentes</code></p>
-                    <p style="color:var(--slate);font-size:12px;">Útil para comparar productividad entre equipos de distinto tamaño.</p>
-                `
-            }
-        };
-
-        window.openMetricInfo = function (key) {
-            const info = METRIC_INFO[key];
-            if (!info) return;
-            document.getElementById('metric-info-title').textContent = info.title;
-            document.getElementById('metric-info-body').innerHTML = info.body;
-            document.getElementById('metric-info-modal').classList.add('open');
-        };
-
-        window.closeMetricInfo = function () {
-            document.getElementById('metric-info-modal').classList.remove('open');
-        };
-
         function validateDay(d) {
             if (d.P === 0 && d.E === 0 && d.C === 0 && d.V === 0 && d.S === 0 && d.prima === 0) return { ok: true, errors: [] };
             const errors = [];
@@ -3626,11 +4393,8 @@
             if (d.E < d.C) errors.push("Entrevistas (E) < Cotizaciones (C)");
             if (d.C < d.V) errors.push("Cotizaciones (C) < Cierres (V)");
             if (d.S < d.V) errors.push("Solicitudes (S) < Cierres (V)");
-            if (d.V === 0 && d.S > 0) {
-                errors.push("Si hay solicitudes, como mínimo tiene que haber 1 cierre");
-            } else if (d.S > d.V * 2) {
-                errors.push("Solicitudes (S) > Doble de Cierres (2V)");
-            }
+            if (d.V === 0 && d.S > 0) errors.push("Si hay solicitudes, como mínimo tiene que haber 1 cierre");
+            if (d.S > d.V * 2) errors.push("Solicitudes (S) > Doble de Cierres (2V)");
             if (d.S > 0 && d.prima < 1) errors.push("Debe ingresar Prima ($) si hay solicitudes");
             // Regla inversa: si hay prima debe haber al menos 1 solicitud (sin esto el embudo
             // aparecía verde con todo en 0 y prima > 0 — ilógico: no hay prima sin venta).
@@ -3781,9 +4545,9 @@
                 </tr>
                 <tr>
                     <th style="border-left:2px solid #475569">P</th><th>E</th><th>C</th><th>V</th><th>S</th>
-                    <th style="border-left:2px solid #475569">P/E</th><th>E/C</th><th>C/V</th>
-                    <th style="border-left:2px solid #475569">P/V</th>
-                    <th style="border-left:2px solid #475569">$/V</th><th>$/Integrante</th>
+                    <th style="border-left:2px solid #475569">P/E</th><th>E/C</th><th title="Cotizaciones por cierre">C/V</th>
+                    <th style="border-left:2px solid #475569" title="Conversión Prospecto a Cierre">P/V</th>
+                    <th style="border-left:2px solid #475569" title="Prima por Venta">$/V</th><th>$/Integrante</th>
                     ${showRedData ? `
                     <th style="border-left:2px solid var(--red);color:var(--red)">S (R)</th>
                     <th style="color:var(--red)">$ (R)</th>
@@ -3857,12 +4621,11 @@
             const rowsEl = document.getElementById('lb-mobile-rows');
             if (!totalEl || !rowsEl) return;
 
-            try { renderPendientesSection(); } catch (e) {}
-
             const agents = Object.keys(agMap);
             if (!agents.length) {
                 totalEl.innerHTML = '';
                 rowsEl.innerHTML = '<div class="lb-mobile-empty">No hay datos con los filtros actuales.</div>';
+                renderPendientesSection();
                 return;
             }
 
@@ -3895,8 +4658,8 @@
                             <div class="value">$${totPrimaCompact}</div>
                         </div>
                     </div>
-                    <div class="lb-team-total-sub">Eficiencia P → V: <strong>${efPV}</strong><button class="info-i-btn" onclick="openMetricInfo('efPV')" aria-label="Info"><i class="fa fa-info"></i></button></div>
-                    <div class="lb-team-total-sub">$/V: <strong>${dolPerV}</strong><button class="info-i-btn" onclick="openMetricInfo('dolPerV')" aria-label="Info"><i class="fa fa-info"></i></button>  ·  $/Integrante: <strong>${dolPerInt}</strong><button class="info-i-btn" onclick="openMetricInfo('dolPerInt')" aria-label="Info"><i class="fa fa-info"></i></button></div>
+                    <div class="lb-team-total-sub">Eficiencia P → V: <strong>${efPV}</strong></div>
+                    <div class="lb-team-total-sub">$/V: <strong>${dolPerV}</strong>  ·  $/Integrante: <strong>${dolPerInt}</strong></div>
                 </div>
             `;
 
@@ -3937,15 +4700,23 @@
                     </div>
                 `;
             }).join('');
+
+            renderPendientesSection();
         }
 
         // ─── CALENDARIO DE REPORTES POR AGENTE ──────────────────────────────────────
+        // Modal con grid de mes. Cada día se colorea según el status:
+        //   🟢 ok      — reportó y el embudo está válido
+        //   🔴 red     — reportó pero hay errores en la validación
+        //   🌙 sin-act — declaró "sin intento de venta"
+        //   ⚪ none    — no reportó nada
         let _calCurrentAgent = null;
         let _calCurrentYear = null;
-        let _calCurrentMonth = null;
-        let _calSelectedDate = null;
+        let _calCurrentMonth = null;   // 1-12
+        let _calSelectedDate = null;   // 1-31 o null
 
         window.openAgentCalendar = function (agentName) {
+            // Decodificar entidades HTML que vienen del escapeHtml
             _calCurrentAgent = (agentName || '').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
             const now = new Date();
             _calCurrentYear = now.getFullYear();
@@ -3985,6 +4756,9 @@
             }
         }
 
+        // ¿Es una fecha futura respecto a HOY (medianoche local)?
+        // Hoy y dias pasados => false (se evaluan con los 4 estados normales).
+        // Manana en adelante => true (se renderean apagados, no clickeables).
         function _calIsFuture(year, month1to12, date) {
             const cellDate = new Date(year, month1to12 - 1, date);
             cellDate.setHours(0, 0, 0, 0);
@@ -4000,14 +4774,17 @@
             if (mesEl) mesEl.textContent = mesStr;
 
             const weeks = getMonthCalendar(_calCurrentYear, _calCurrentMonth);
+            // Leading empty cells: cuántos días del Lunes hay antes del día 1
             const firstDayName = weeks[0]?.[0]?.dayName || 'Lunes';
-            const leadingEmpty = DAYS.indexOf(firstDayName);
+            const leadingEmpty = DAYS.indexOf(firstDayName); // 0=Lunes ... 6=Domingo
 
+            // Entries del agente para este mes
             // Defensivo: aceptar agent name O agentId (apps con refactor agentId).
             const entriesThisMonth = (state.entries || []).filter(e =>
                 ((e.agent === _calCurrentAgent) || (e.agentId === _calCurrentAgent)) && e.mes === mesStr
             );
 
+            // Map: dayDate -> {dia, status}
             const dayStatusMap = {};
             weeks.forEach((week, wIdx) => {
                 const semana = wIdx + 1;
@@ -4019,6 +4796,7 @@
             });
             window._calDayStatusMap = dayStatusMap;
 
+            // Construir grid: leading empties + days
             const grid = document.getElementById('cal-grid-body');
             if (!grid) return;
             const cells = [];
@@ -4027,6 +4805,7 @@
             }
             const daysInMonth = new Date(_calCurrentYear, _calCurrentMonth, 0).getDate();
             for (let d = 1; d <= daysInMonth; d++) {
+                // Futuros: cell faded sin onclick, no aplican los 4 estados.
                 if (_calIsFuture(_calCurrentYear, _calCurrentMonth, d)) {
                     cells.push(`<div class="cal-cell future"><span class="cal-num">${d}</span></div>`);
                     continue;
@@ -4044,6 +4823,7 @@
             }
             grid.innerHTML = cells.join('');
 
+            // Limpiar detalle
             const detail = document.getElementById('cal-day-detail');
             if (detail) detail.innerHTML = '<span class="cal-detail-empty">Toca un día para ver detalles.</span>';
         }
@@ -4053,16 +4833,10 @@
             const detail = document.getElementById('cal-day-detail');
             if (!detail || !info) return;
             _calSelectedDate = date;
+            // Re-render para actualizar el highlight
             document.querySelectorAll('.cal-cell.selected').forEach(c => c.classList.remove('selected'));
-            const targetCells = document.querySelectorAll('.cal-grid-body .cal-cell');
-            // Find the cell with matching date (skip empty + future cells)
-            for (const cell of targetCells) {
-                const numEl = cell.querySelector('.cal-num');
-                if (numEl && parseInt(numEl.textContent) === date && !cell.classList.contains('empty') && !cell.classList.contains('future')) {
-                    cell.classList.add('selected');
-                    break;
-                }
-            }
+            const targetCell = document.querySelectorAll('.cal-grid-body .cal-cell:not(.empty)')[date - 1];
+            if (targetCell) targetCell.classList.add('selected');
 
             const mesNombre = MONTHS_ES[_calCurrentMonth - 1];
             const fechaStr = `${date} de ${mesNombre} (${info.dayName})`;
@@ -4249,7 +5023,7 @@
                 options: chartOptsPct()
             });
 
-            // Efectividad: P→V, P→S (porcentajes)
+            // Efectividad: P→V (porcentaje)
             destroyChart('efectividad');
             const ctxEf = document.getElementById('chartEfectividad').getContext('2d');
             charts['efectividad'] = new Chart(ctxEf, {
@@ -4273,199 +5047,6 @@
                     ]
                 },
                 options: chartOptsDollar()
-            });
-        }
-
-        // ─── KPI CHARTS ──────────────────────────────────────────────────────────────
-        // ─── KPI CHARTS: helpers, plugin, view-mode pills ──────────────────────────
-        // Modos de visualización para los KPI charts.
-        //   'top10' (default), 'top30', 'all', 'foco30', 'foco10'
-        // En "Foco" el orden se invierte: el peor aparece primero (izquierda).
-        let kpiViewMode = 'top10';
-        window.setKpiViewMode = function (mode) {
-            kpiViewMode = mode;
-            document.querySelectorAll('.kpi-pill').forEach(p => {
-                p.classList.toggle('active', p.dataset.mode === mode);
-            });
-            renderKPIs();
-        };
-
-        // Plugin global: copia limites del eje y al eje y1 para que el axis
-        // derecho refleje exactamente la misma escala que el izquierdo.
-        (function registerMirrorYAxisPlugin() {
-            if (!window.Chart || window.__mirrorYAxisRegistered) return;
-            Chart.register({
-                id: 'mirrorYAxis',
-                afterDataLimits: function (chart, args) {
-                    if (!args || !args.scale) return;
-                    if (args.scale.id !== 'y1') return;
-                    const y = chart.scales && chart.scales.y;
-                    if (!y) return;
-                    if (Number.isFinite(y.min)) args.scale.min = y.min;
-                    if (Number.isFinite(y.max)) args.scale.max = y.max;
-                }
-            });
-            window.__mirrorYAxisRegistered = true;
-        })();
-
-        // Aplica configuracion uniforme a las opciones de cada KPI chart:
-        // - Siempre esconde nombres del eje X (tooltip los muestra)
-        // - Desactiva legend nativo (lo manejamos en HTML afuera del scroll)
-        // - isMulti=true => tooltip mode 'index' (muestra todas las barras del set)
-        function _applyKpiTruncate(opts, expanded, isMulti) {
-            const o = { ...opts };
-            o.scales = { ...(opts.scales || {}) };
-            o.scales.x = { ...(opts.scales?.x || {}) };
-            o.scales.x.ticks = { ...(opts.scales?.x?.ticks || {}), display: false };
-            o.plugins = { ...(opts.plugins || {}) };
-            o.plugins.legend = { ...(opts.plugins?.legend || {}), display: false };
-            const tipBase = {
-                ...(opts.plugins?.tooltip || {}),
-                callbacks: {
-                    ...(opts.plugins?.tooltip?.callbacks || {}),
-                    title: function (items) { return items[0]?.label || ''; }
-                }
-            };
-            o.plugins.tooltip = isMulti
-                ? { ...tipBase, mode: 'index', intersect: false }
-                : tipBase;
-            return o;
-        }
-
-        // Setea --bar-count en cada .kpi-chart-inner. CSS usa
-        //   width: max(100%, calc(var(--bar-count) * 50px))
-        // para que sea reactivo al ancho real del padre.
-        function _sizeKpiInners(agentCount) {
-            const ids = ['kpiVolumeFull', 'kpiVolumen', 'kpiEfectividad', 'kpiRatioEP', 'kpiRatioCE', 'kpiRatioVC', 'kpiPrimaPromedios'];
-            ids.forEach(id => {
-                const canvas = document.getElementById(id);
-                if (!canvas) return;
-                const inner = canvas.parentElement;
-                if (inner && inner.classList.contains('kpi-chart-inner')) {
-                    inner.style.setProperty('--bar-count', String(Math.max(1, agentCount)));
-                }
-            });
-        }
-
-        // Scrollbar custom siempre visible: sync con scroll horizontal del
-        // chart-wrap. Soporta drag del thumb + click en el track para jump.
-        // Idempotente — listeners se ataan una sola vez via __kpiScrollbarBound.
-        function _attachKpiScrollbar(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const wrap = canvas.closest('.chart-wrap.kpi-scroll');
-            const card = wrap && wrap.closest('.chart-card');
-            if (!wrap || !card) return;
-            const bar = card.querySelector('.kpi-custom-scrollbar[data-for="' + canvasId + '"]');
-            if (!bar) return;
-            const thumb = bar.querySelector('.kpi-custom-scroll-thumb');
-            if (!thumb) return;
-
-            const update = () => {
-                const inner = wrap.firstElementChild;
-                if (!inner) return;
-                const innerW = inner.scrollWidth || inner.offsetWidth || 0;
-                const wrapW = wrap.clientWidth || 1;
-                const barW = bar.clientWidth || 1;
-                if (innerW <= wrapW + 1) {
-                    thumb.style.width = '100%';
-                    thumb.style.left = '0px';
-                    return;
-                }
-                const ratio = wrapW / innerW;
-                const thumbW = Math.max(28, Math.floor(barW * ratio));
-                const maxLeft = barW - thumbW;
-                const scrollPct = wrap.scrollLeft / (innerW - wrapW);
-                const leftPx = Math.max(0, Math.min(maxLeft, scrollPct * maxLeft));
-                thumb.style.width = thumbW + 'px';
-                thumb.style.left = leftPx + 'px';
-            };
-
-            if (!wrap.__kpiScrollbarBound) {
-                wrap.addEventListener('scroll', update, { passive: true });
-                if (window.ResizeObserver) {
-                    const ro = new ResizeObserver(() => requestAnimationFrame(update));
-                    ro.observe(wrap);
-                    ro.observe(wrap.firstElementChild || wrap);
-                } else {
-                    window.addEventListener('resize', update);
-                }
-                wrap.__kpiScrollbarBound = true;
-            }
-
-            if (!thumb.__dragBound) {
-                let dragging = false, startX = 0, startScroll = 0, barWcache = 0, thumbWcache = 0, innerWcache = 0, wrapWcache = 0;
-                const onDown = (e) => {
-                    dragging = true;
-                    const pt = e.touches ? e.touches[0] : e;
-                    startX = pt.clientX;
-                    startScroll = wrap.scrollLeft;
-                    const inner = wrap.firstElementChild;
-                    innerWcache = (inner && (inner.scrollWidth || inner.offsetWidth)) || 0;
-                    wrapWcache = wrap.clientWidth || 1;
-                    barWcache = bar.clientWidth || 1;
-                    thumbWcache = thumb.offsetWidth || 1;
-                    e.preventDefault();
-                };
-                const onMove = (e) => {
-                    if (!dragging) return;
-                    const pt = e.touches ? e.touches[0] : e;
-                    const dx = pt.clientX - startX;
-                    const trackTravel = Math.max(1, barWcache - thumbWcache);
-                    const scrollableRange = Math.max(0, innerWcache - wrapWcache);
-                    wrap.scrollLeft = startScroll + (dx / trackTravel) * scrollableRange;
-                };
-                const onUp = () => { dragging = false; };
-                thumb.addEventListener('mousedown', onDown);
-                thumb.addEventListener('touchstart', onDown, { passive: false });
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('touchmove', onMove, { passive: true });
-                document.addEventListener('mouseup', onUp);
-                document.addEventListener('touchend', onUp);
-                thumb.__dragBound = true;
-            }
-
-            if (!bar.__trackBound) {
-                bar.addEventListener('click', (e) => {
-                    if (e.target === thumb) return;
-                    const rect = bar.getBoundingClientRect();
-                    const clickX = e.clientX - rect.left;
-                    const inner = wrap.firstElementChild;
-                    const innerW = (inner && (inner.scrollWidth || inner.offsetWidth)) || 0;
-                    const wrapW = wrap.clientWidth || 1;
-                    if (innerW <= wrapW) return;
-                    const pct = clickX / Math.max(1, rect.width);
-                    wrap.scrollLeft = pct * (innerW - wrapW);
-                });
-                bar.__trackBound = true;
-            }
-
-            requestAnimationFrame(update);
-        }
-
-        // Renderiza un legend HTML afuera del scroll horizontal. Cada item es
-        // un boton que toggle-ea la visibilidad del dataset (tachado cuando oculto).
-        function _buildHtmlLegend(chart, legendElId) {
-            const el = document.getElementById(legendElId);
-            if (!el || !chart) return;
-            el.innerHTML = '';
-            chart.data.datasets.forEach((ds, i) => {
-                const meta = chart.getDatasetMeta(i);
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'chart-legend-btn' + (meta.hidden ? ' is-hidden' : '');
-                const swatch = document.createElement('span');
-                swatch.className = 'legend-swatch';
-                swatch.style.background = ds.backgroundColor || '#888';
-                btn.appendChild(swatch);
-                btn.appendChild(document.createTextNode(ds.label || ('Dataset ' + i)));
-                btn.addEventListener('click', () => {
-                    const m = chart.getDatasetMeta(i);
-                    m.hidden = m.hidden === null ? !chart.data.datasets[i].hidden : null;
-                    btn.classList.toggle('is-hidden');
-                    chart.update();
-                });
-                el.appendChild(btn);
             });
         }
 
@@ -4525,7 +5106,6 @@
                 }
             }
 
-            // Coach: keyed por nombre de agente (no agentId).
             const agMap = {};
             entries.forEach(e => {
                 if (!agMap[e.agent]) agMap[e.agent] = { P: 0, E: 0, C: 0, V: 0, S: 0, prima: 0 };
@@ -4533,48 +5113,15 @@
                 agMap[e.agent].prima += e.totales.prima;
             });
 
-            let agents = Object.keys(agMap);
+            const agents = Object.keys(agMap);
             agents.sort((a, b) => agMap[b].prima - agMap[a].prima);
 
-            // ─── VISTA: TOP / TODOS / FOCO ─────────────────────────────────────
-            const _totalAgents = agents.length;
-            let mode = kpiViewMode;
-            // Coach-specific: if Top 10 is hidden (≤10 agents) and user was on it, fall back to 'all'.
-            if (mode === 'top10' && _totalAgents <= 10) mode = 'all';
-            // Si el modo elegido es top30/foco30 pero no hay >30 agentes, bajamos
-            // a top10/foco10 (las pills de 30 no se muestran).
-            if ((mode === 'top30' || mode === 'foco30') && _totalAgents <= 30) {
-                mode = (mode === 'top30') ? 'top10' : 'foco10';
-            }
-            if (mode === 'top10')      agents = agents.slice(0, 10);
-            else if (mode === 'top30') agents = agents.slice(0, 30);
-            else if (mode === 'foco30') agents = agents.slice(-30).reverse();
-            else if (mode === 'foco10') agents = agents.slice(-10).reverse();
-            // 'all' => sin slicing. slice() tolera arrays mas chicos que N.
-
-            // Pills smart para coach: top10 solo si >10 agentes (con <=10 es redundante con 'all').
-            // 'all' y 'foco10' siempre visibles (Foco 10 sirve aunque haya pocos porque invierte orden).
-            const _pillVisibility = {
-                top10: _totalAgents > 10,
-                all: true,
-                foco10: true,
-                top30: _totalAgents > 30,
-                foco30: _totalAgents > 30
-            };
-            document.querySelectorAll('.kpi-pill').forEach(p => {
-                p.hidden = !_pillVisibility[p.dataset.mode];
-            });
-
-            const labels = agents; // names directly (coach uses name pattern)
+            const labels = agents;
             const primas = agents.map(a => agMap[a].prima);
             const Vs = agents.map(a => agMap[a].V);
             const Ps = agents.map(a => agMap[a].P);
             // Eficiencia P → V en porcentaje (0-100)
             const pvs = agents.map(a => agMap[a].P > 0 ? parseFloat(((agMap[a].V / agMap[a].P) * 100).toFixed(1)) : 0);
-
-            // Always-hide-X-labels + setear --bar-count para el ancho del scroll.
-            const _expanded = true;
-            _sizeKpiInners(agents.length);
 
             destroyChart('kpiVolumen');
             charts['kpiVolumen'] = new Chart(document.getElementById('kpiVolumen').getContext('2d'), {
@@ -4585,19 +5132,15 @@
                         { label: 'Contactos (P)', data: Ps, backgroundColor: CHART_COLORS.P }
                     ]
                 },
-                options: _applyKpiTruncate(chartOpts('Cantidad'), _expanded, true)
+                options: chartOpts('Cantidad')
             });
-            _buildHtmlLegend(charts['kpiVolumen'], 'legend-kpiVolumen');
-            _attachKpiScrollbar('kpiVolumen');
 
             destroyChart('kpiEfectividad');
             charts['kpiEfectividad'] = new Chart(document.getElementById('kpiEfectividad').getContext('2d'), {
                 type: 'bar',
                 data: { labels, datasets: [{ label: 'Eficiencia P → V', data: pvs, backgroundColor: CHART_COLORS.P }] },
-                options: _applyKpiTruncate(chartOptsPct(), _expanded, false)
+                options: chartOptsPct()
             });
-            _buildHtmlLegend(charts['kpiEfectividad'], 'legend-kpiEfectividad');
-            _attachKpiScrollbar('kpiEfectividad');
 
             // Volumen Full PECVS
             const dataP = agents.map(a => agMap[a].P);
@@ -4618,10 +5161,8 @@
                         { label: 'S', data: dataS, backgroundColor: CHART_COLORS.S }
                     ]
                 },
-                options: _applyKpiTruncate(chartOpts('Cantidad Unidades'), _expanded, true)
+                options: chartOpts('Cantidad Unidades')
             });
-            _buildHtmlLegend(charts['kpiVolumeFull'], 'legend-kpiVolumeFull');
-            _attachKpiScrollbar('kpiVolumeFull');
 
             // Ratios de Embudo (en porcentaje 0-100)
             const ratios = [
@@ -4636,10 +5177,8 @@
                 charts[r.id] = new Chart(document.getElementById(r.id).getContext('2d'), {
                     type: 'bar',
                     data: { labels, datasets: [{ label: r.label, data: data, backgroundColor: r.color }] },
-                    options: _applyKpiTruncate(chartOptsPct(), _expanded, false)
+                    options: chartOptsPct()
                 });
-                _buildHtmlLegend(charts[r.id], 'legend-' + r.id);
-                _attachKpiScrollbar(r.id);
             });
 
             // Prima promedio: $/S vs $/V por agente
@@ -4655,15 +5194,12 @@
                         { label: 'Prima por Venta ($/V)', data: primaPerV, backgroundColor: CHART_COLORS.V }
                     ]
                 },
-                options: _applyKpiTruncate(chartOptsDollar(), _expanded, true)
+                options: chartOptsDollar()
             });
-            _buildHtmlLegend(charts['kpiPrimaPromedios'], 'legend-kpiPrimaPromedios');
-            _attachKpiScrollbar('kpiPrimaPromedios');
         }
 
         // chartOpts especial para gráficas con montos en pesos $
         function chartOptsDollar() {
-            const fmt = (v) => '$' + v.toLocaleString('es-MX');
             return {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
@@ -4673,16 +5209,9 @@
                 scales: {
                     x: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
                     y: {
-                        position: 'left',
                         grid: { color: 'rgba(255,255,255,.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: fmt },
+                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: (v) => '$' + v.toLocaleString('es-MX') },
                         title: { display: true, text: 'Prima ($)', color: '#94a3b8', font: { size: 10 } },
-                        beginAtZero: true
-                    },
-                    y1: {
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: fmt },
                         beginAtZero: true
                     }
                 }
@@ -4691,7 +5220,6 @@
 
         // chartOpts especial para gráficas de % (formatea ticks y tooltip con sufijo %)
         function chartOptsPct() {
-            const fmt = (v) => v + '%';
             return {
                 responsive: true, maintainAspectRatio: false,
                 plugins: {
@@ -4701,16 +5229,9 @@
                 scales: {
                     x: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
                     y: {
-                        position: 'left',
                         grid: { color: 'rgba(255,255,255,.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: fmt },
+                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: (v) => v + '%' },
                         title: { display: true, text: '% Eficiencia', color: '#94a3b8', font: { size: 10 } },
-                        beginAtZero: true
-                    },
-                    y1: {
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: fmt },
                         beginAtZero: true
                     }
                 }
@@ -4723,19 +5244,7 @@
                 plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } } },
                 scales: {
                     x: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-                    y: {
-                        position: 'left',
-                        grid: { color: 'rgba(255,255,255,.05)' },
-                        ticks: { color: '#94a3b8', font: { size: 10 } },
-                        title: { display: true, text: yLabel, color: '#94a3b8', font: { size: 10 } },
-                        beginAtZero: true
-                    },
-                    y1: {
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        ticks: { color: '#94a3b8', font: { size: 10 } },
-                        beginAtZero: true
-                    }
+                    y: { grid: { color: 'rgba(255,255,255,.05)' }, ticks: { color: '#94a3b8', font: { size: 10 } }, title: { display: true, text: yLabel, color: '#94a3b8', font: { size: 10 } } }
                 }
             };
         }
@@ -4748,7 +5257,7 @@
                     const allZero = d.P === 0 && d.E === 0 && d.C === 0 && d.V === 0 && d.S === 0;
                     if (allZero) return;
 
-                    const ok = d.P >= d.E && d.E >= d.C && d.C >= d.V && d.S >= d.V && d.S <= (d.V * 2) && (d.S > 0 ? d.prima >= 1 : true);
+                    const ok = d.P >= d.E && d.E >= d.C && d.C >= d.V && d.S >= d.V && !(d.V === 0 && d.S > 0) && d.S <= (d.V * 2) && (d.S > 0 ? d.prima >= 1 : true);
                     if (!ok) {
                         let razon = '';
                         if (d.P < d.E) razon = 'Contactos < Entrevistas';
@@ -4756,7 +5265,7 @@
                         else if (d.C < d.V) razon = 'Cotizaciones < Cierres';
                         else if (d.S < d.V) razon = 'Solicitudes < Cierres';
                         else if (d.V === 0 && d.S > 0) razon = 'Si hay solicitudes, como mínimo tiene que haber 1 cierre';
-                        else if (d.S > d.V * 2) razon = 'Solicitudes > Doble de Cierres (Máx 2V)';
+                        else if (d.S > d.V * 2) razon = 'Solicitudes (S) > Doble de Cierres (2V)';
                         else if (d.S > 0 && d.prima < 1) razon = 'Debe ingresar Prima ($) si hay solicitudes';
                         errors.push(`🚩 [${e.agent}] ${e.mes} - Sem ${e.semana} (${d.dia}): Rompe jerarquía (${razon})`);
                     }
@@ -5224,7 +5733,6 @@
             } catch(e) { container.innerHTML = '<div class="empty-state">Error cargando compras del equipo.</div>'; }
         }
 
-        // Entry point del botón de canje (abre modal custom)
         // Image preview modal (thumbnail click → imagen grande)
         window.openImagePreview = function (url) {
             if (!url) return;
@@ -5241,6 +5749,7 @@
             if (img) img.src = '';
         };
 
+        // Entry point del botón de canje (abre modal custom)
         window.coachSolicitarCanje = function(itemId, itemNombre, costo, emoji, catalogDoc) {
             if ((state.karma || 0) < costo) { alert('Totopos insuficientes.'); return; }
             openCanjeConfirm(itemId, itemNombre, costo, emoji, catalogDoc);
