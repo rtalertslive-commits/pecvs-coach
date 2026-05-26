@@ -3079,6 +3079,31 @@
         //   1. Director:  targetDirectorCode === state.directorCode  AND  targetRoles contains 'coaches'
         //   2. Promotor:  targetPromotorTeamCode === state.promotorCode  AND  targetRoles contains 'coaches'
         // El modal renderiza la unión, badge cuenta no-leídos del total.
+
+        // Registro compartido con el director para parseo [[key]] → chip inline.
+        // Cuando el director escribe "tocá [[anuncios]]", el coach ve un círculo
+        // dorado con el icono real del botón en el body del anuncio.
+        const ANUNCIO_UI_ELEMENTS = {
+            notif:      { label: 'Notificaciones', icon: 'fa-bell' },
+            anuncios:   { label: 'Anuncios',       icon: 'fa-bullhorn' },
+            tienda:     { label: 'Tienda',         icon: 'fa-store' },
+            perfil:     { label: 'Mi Perfil',      icon: 'fa-user' },
+            config:     { label: 'Configuración',  icon: 'fa-cog' },
+            karma:      { label: 'Totopos',        icon: 'fa-star' },
+            historial:  { label: 'Historial',      icon: 'fa-clock-rotate-left' },
+            equipo:     { label: 'Mi Equipo',      icon: 'fa-users' },
+            reportes:   { label: 'Reportes',       icon: 'fa-file-lines' },
+        };
+
+        function renderAnuncioBody(text) {
+            const escaped = escapeHtml(text || '');
+            return escaped.replace(/\[\[([\w-]+)\]\]/g, (match, key) => {
+                const el = ANUNCIO_UI_ELEMENTS[key.toLowerCase()];
+                if (!el) return match;
+                return `<span title="${escapeHtml(el.label)}" style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; border:1px solid var(--gold); background:rgba(15,23,42,0.8); color:var(--gold-l); font-size:11px; margin:0 3px; vertical-align:middle;"><i class="fa ${el.icon}"></i></span>`;
+            });
+        }
+
         let _anunciosUnsubs = [];       // array de unsubscribe functions
         let _anunciosDict = {};          // { [id]: { id, ...data } } — dedup natural
         let _anunciosCache = [];         // array ordenado, derivado del dict para render
@@ -3203,7 +3228,7 @@
                                 </div>
                                 <div style="font-size:11px; color:var(--slate); white-space:nowrap; flex-shrink:0;">${dt}</div>
                             </div>
-                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${escapeHtml(a.body || '')}</div>
+                            <div style="font-size:13px; color:rgba(255,255,255,0.85); line-height:1.45; margin-bottom:6px; white-space:pre-wrap;">${renderAnuncioBody(a.body || '')}</div>
                             <div style="font-size:10px; color:var(--slate);">— ${escapeHtml(a.createdByName || a.createdBy || '')}</div>
                         </div>
                     `;
